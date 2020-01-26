@@ -1,0 +1,219 @@
+$base_color_1: #FFEAC8;
+$base_color_2: #B1A3A7;
+$base_color_3: #E1CABB;
+$base_color_4: #1E2E58;
+$base_color_5: rgb(206, 208, 219);
+
+.oneArea {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  max-width: 1024px;
+  margin: 50px auto;
+  padding: 0 10px !important;
+}
+.oneArea .onebox {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.oneArea .myself {
+  flex-direction: row-reverse;
+  margin-top: 15px;
+}
+.oneArea .member {
+  margin-top: 15px;
+}
+.oneArea .onebox .imgArea {
+  width: 16%;
+  position: relative;
+}
+.oneArea .member .imgArea img {
+  width: 100%;
+  max-width: 130px;
+  position: absolute;
+  top: -20px;
+  left: 0;
+  padding-right: 30px;
+}
+.oneArea .myself .imgArea img {
+  width: 100%;
+  max-width: 130px;
+  position: absolute;
+  top: -20px;
+  left: auto;
+  right: 0;
+  padding-left: 30px;
+}
+.oneArea .onebox .fukiArea {
+  width: auto;
+  max-width: 90%;
+}
+.oneArea{
+  .myself{
+    .fukiArea{
+      .msg_time{
+        text-align: right;
+        font-size: 12px;
+        color: #666;
+      }
+      .member_name{
+        font-size: 12px;
+        margin-bottom: 0;
+        position: relative;
+        color: $base_color_4;
+        text-align: right;
+      }
+    }
+  }
+  .member{
+    .fukiArea{
+      .msg_time{
+        text-align: left;
+        font-size: 12px;
+        color: #666;
+      }
+      .member_name{
+        font-size: 12px;
+        margin-bottom: 0;
+        position: relative;
+        color: $base_color_4;
+        text-align: right;
+      }
+    }
+  }
+}
+.oneArea .onebox .fukidasi {
+  width: 100%;
+  position: relative;
+  padding: 25px;
+  background-color: $base_color_3;
+  font-size: 18px;
+  color: #333;
+  border-radius: 12px;
+  box-sizing: border-box;
+  p{
+    font-size: 13px;
+    white-space: pre-wrap;
+    margin-bottom: 5px;
+  }
+}
+.oneArea .onebox .fukidasi::before {
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: rotate(45deg);
+  top: 22px;
+  border-right: 25px solid transparent;
+  border-bottom: 25px solid transparent;
+}
+.oneArea .onebox .fukidasi::after {
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: rotate(45deg);
+  top: 40px;
+  border-right: 25px solid transparent;
+  border-bottom: 25px solid transparent;
+}
+.oneArea .member .fukidasi::before {
+  left: -15px;
+  border-left: 25px solid $base_color_3;
+  border-top: 25px solid transparent;
+}
+.oneArea .member .fukidasi::after {
+  left: -25px;
+  border-left: 25px solid $base_color_1;
+  border-top: 25px solid transparent;
+}
+.oneArea .myself .fukidasi {
+  // background-color: $base_color_5;
+  color: #333;
+}
+.oneArea .myself .fukidasi::before {
+  left: auto;
+  right: -15px;
+  border-left: 25px solid transparent;
+  border-top: 25px solid $base_color_3;
+}
+.oneArea .myself .fukidasi::after {
+  left: auto;
+  right: -25px;
+  border-left: 25px solid transparent;
+  border-top: 25px solid $base_color_1;
+}
+
+.oneArea .owner .fukidasi {
+  background-color: $base_color_5;
+  color: #333;
+}
+.oneArea {
+  .member{
+    &.owner{
+      .fukidasi::before{
+        border-left: 25px solid $base_color_5;
+      }
+    }
+  }
+}
+.oneArea {
+  .myself{
+    &.owner{
+      .fukidasi::before{
+        border-top: 25px solid $base_color_5;
+      }
+    }
+  }
+}
+// .oneArea .member .fukidasi::before, .oneArea .owner .fukidasi::before{
+//   border-left: 25px solid $base_color_5;
+// }
+// .oneArea .member .fukidasi::before, .oneArea .owner .fukidasi::before{
+//   border-left: 25px solid $base_color_5;
+// }
+// .oneArea .owner .fukidasi::after {
+//   border-left: 25px solid transparent;
+//   border-color:$base_color_1;
+// }
+
+.oneArea .member .imgArea img {
+  max-width: 70%;
+  top: 0;
+}
+.oneArea .myself .imgArea img {
+  max-width: 70%;
+  top: 0;
+}
+.oneArea .onebox .fukidasi {
+  padding: 15px;
+  font-size: 14px;
+  padding-bottom: 0;
+}
+.oneArea .onebox .fukidasi::before {
+  top: 7px;
+}
+.oneArea .onebox .fukidasi::after {
+  top: 20px;
+}
+@media screen and (max-width: 420px) {
+  .oneArea {
+    margin: 30px auto;
+  }
+  .oneArea .member {
+    margin-top: 15px;
+  }
+  .oneArea .onebox .imgArea {
+    width: 20%;
+  }
+  .oneArea .onebox .fukidasi {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+}
