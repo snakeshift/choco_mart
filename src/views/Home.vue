@@ -188,7 +188,7 @@ $base_color_3: #E1CABB;
 $base_color_4: #1E2E58;
 
 input{
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .morico{
@@ -214,7 +214,7 @@ input{
 }
 .name-check{
   min-width: 28px !important;
-  width: 28px;
+  width: 28px !important;
   height: 28px !important;
   box-shadow: unset !important;
   span{
@@ -412,7 +412,11 @@ input{
 .text-choco{
   color: $base_color_1;
   font-family: 'choco';
+  &.body-2{
+    font-family: 'choco' !important;
+  }
 }
+
 .text-normal{
   font-family: sans-serif;
   font-weight: bold;
@@ -420,6 +424,9 @@ input{
 .text-choco-dark{
   color: $base_color_4;
   font-family: 'choco';
+  &.body-2{
+    font-family: 'choco' !important;
+  }
 }
 .border-choco{
   border: 3px solid $base_color_4 !important;

@@ -38,7 +38,7 @@ export default {
   width: 100vw;
   position: absolute;
   background-size: cover;
-  background-image: url("./assets/imgs/wall.png");
+  background-image: url("./assets/imgs/odarimu.png");
   background-color: #FFEAC8;
 }
 .fade-enter-active, .fade-leave-active {

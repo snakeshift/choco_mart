@@ -50,7 +50,18 @@ async function getUserData(){
   const user = await firebase.auth().signInAnonymously()
   return user
 }
-router.beforeEach(async (to, from, next) => {
+
+// homeへ移動した後に、ユーザ情報が取れなければInitへ飛ばす
+
+// 
+
+// router.beforeEach((to, from, next) => {
+
+  // if (to.path !== '/home') {
+  //   next('/home');
+  // } else {
+  //   next();
+  // }
   // 認証情報を取得
   // let userData = await getUserData()
   // store.commit('auth/onAuthStateChanged', userData.user);
@@ -68,7 +79,7 @@ router.beforeEach(async (to, from, next) => {
   //     // next('/')
   //   }
   // })
-})
+// })
 // firebase.auth().signOut();
 new Vue({
   router,
