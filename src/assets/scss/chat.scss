@@ -10,7 +10,7 @@ $base_color_5: rgb(206, 208, 219);
   justify-content: flex-start;
   max-width: 1024px;
   margin: 50px auto;
-  padding: 0 10px !important;
+  // padding: 0 10px !important;
 }
 .oneArea .onebox {
   width: 100%;
@@ -53,6 +53,11 @@ $base_color_5: rgb(206, 208, 219);
 .oneArea{
   .myself{
     .fukiArea{
+      display: flex;
+      flex-direction: row-reverse;
+      .v-avatar{
+        margin-left: 20px;
+      }
       .msg_time{
         text-align: right;
         font-size: 12px;
@@ -69,6 +74,10 @@ $base_color_5: rgb(206, 208, 219);
   }
   .member{
     .fukiArea{
+      display: flex;
+      .v-avatar{
+        margin-right: 20px;
+      }
       .msg_time{
         text-align: left;
         font-size: 12px;

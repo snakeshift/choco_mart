@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.8fc90a88c9a1cbddd88967fc33a8c380.js"
+  "/precache-manifest.2c489d0e18747eba9760f49219df6729.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "choco_mart"});
+workbox.core.setCacheNameDetails({prefix: "chocottoland"});
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {

@@ -83,6 +83,8 @@
 <script>
 import firebaseConfig from '@/plugins/firebase'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import firebase from 'firebase'
+import store from '@/store'
 
 import buy from '@/components/buy.vue'
 import sell from '@/components/sell.vue'
@@ -174,7 +176,28 @@ export default {
         this.dialog.isShow = false
       }
       this.dialog.isShow = true
+    },
+    async getUserData(){
+      const user = await firebase.auth().signInAnonymously()
+      return user
     }
+  },
+  async mounted(){
+    let userData = await this.getUserData()
+    store.commit('auth/onAuthStateChanged', userData.user);
+    store.commit('auth/onUserStatusChanged', userData.user.uid ? true : false);
+    let userRef = firebase.firestore().collection("users").doc(userData.user.uid)
+    const _this = this
+    await userRef.get().then(function(doc) {
+      if(doc.exists) {
+        userRef.update({
+          updated_at: firebase.firestore.FieldValue.serverTimestamp()
+        })
+      }else{
+        // 認証情報が取れていなければ初期化ページに飛ばす
+        _this.$router.push('/')
+      }
+    })
   },
   watch: {
   },
@@ -465,10 +488,10 @@ input{
 .panel-choco{
   .good{
     position: absolute;
-    width: 47px;
-    height: 47px;
-    right: 5px;
-    top: 4px;
+    right: 15px;
+    top: 8px;
+    display: flex;
+    align-items: center;
   }
   .write{
     position: absolute;

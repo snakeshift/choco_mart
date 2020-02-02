@@ -29,11 +29,26 @@
       <ul class="chat-choco oneArea">
         <li v-for="(content,index) in reply" :key="index" class="onebox" :class="{'owner': content.uid == uid, 'myself': content.uid == user.uid,'member': content.uid != user.uid}">
           <div class="fukiArea">
-            <div class="fukidasi">
-              <p v-html="content.msg" class="text-normal"></p>
-              <p class="member_name">{{members[content.uid] ? members[content.uid]["name"] : ""}}</p>
+            <v-avatar color="" size="30" v-if="content.uid == uid">
+              <img
+                src="@/assets/imgs/avatars/100.gif"
+                alt="John"
+              >
+            </v-avatar>
+            <v-avatar size="30" v-else>
+              <img
+                src="@/assets/imgs/avatars/101.gif"
+                alt="John"
+                style="transform: scale(-1, 1);"
+              >
+            </v-avatar>
+            <div>
+              <div class="fukidasi">
+                <p v-html="content.msg" class="text-normal"></p>
+                <p class="member_name">{{members[content.uid] ? members[content.uid]["name"] : ""}}</p>
+              </div>
+              <p class="msg_time">{{getFormatedDate(content.created_at)}}</p>
             </div>
-            <p class="msg_time">{{getFormatedDate(content.created_at)}}</p>
           </div>
         </li>
       </ul>
@@ -68,9 +83,10 @@
       </v-row>
     </div>
     <div class="panel-choco">
-      <v-btn class="ma-2 good" dark color="deep-orange darken-2" @click="sendGood()">
-        <v-icon dark left>mdi-thumb-up</v-icon>{{good}}
-      </v-btn>
+      <div class="good ma-2">
+        <v-icon left color="red lighten-2" @click="sendGood()">mdi-thumb-up</v-icon>
+        <span>{{good}}</span>
+      </div>
       <v-btn class="mx-2 back" fab dark small color="#1E2E58" @click="$emit('closeReply'); closeListener()">
         <v-icon dark>mdi-undo</v-icon>
       </v-btn>
@@ -258,7 +274,7 @@ $base_color_4: #1E2E58;
     tr{
       &:first-of-type{
         td{
-          padding-right: 70px;
+          // padding-right: 70px;
         }
       }
       &:last-of-type{
