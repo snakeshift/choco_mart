@@ -14,7 +14,7 @@
             <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'lists')">
               <td>
                 <div class="item-input-choco">
-                  <v-chip dark :color="(item.status == 3) ? '' : (item.type == 1) ? '#FF8F00' : '#00ACC1'" x-small class="chip">{{(item.status == 3) ? "終" : TYPE[item.type]}}</v-chip>
+                  <v-chip dark :color="(item.status == 3) ? '' : TYPE_COLOR[item.type]" x-small class="chip">{{(item.status == 3) ? "終" : TYPE[item.type]}}</v-chip>
                   <span type="text" class="text-choco-dark pl-12">
                     <template v-if="$vuetify.breakpoint.xs">
                       {{trimText(item.name,12)}}
@@ -102,7 +102,7 @@ export default {
       items: {},
       pageSetting: {
         index: 1,
-        interval: 20
+        interval: 21
       },
     }
   },

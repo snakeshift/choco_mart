@@ -49,11 +49,11 @@ export default {
         })
         // 初期設定(売る)
         sellRef.set({
-          count: 10,
+          count: 15,
         })
         // 初期設定(売る)
         buyRef.set({
-          count: 10,
+          count: 15,
         })
         // 初期設定(通知)
         noticeRef.set({

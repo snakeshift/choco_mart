@@ -95,7 +95,7 @@
                 label="タイトル.."
                 v-model="chat.title"
                 outlined
-                class="mb-4 text-normal"
+                class="mb-4 text-choco-dark body"
               ></v-text-field>
               <v-textarea
                 outlined
@@ -103,7 +103,7 @@
                 v-model="chat.content"
                 no-resize
                 height="180px"
-                class="text-normal"
+                class="text-choco-dark body"
               ></v-textarea>
             </div>
             <div class="footer">
@@ -155,7 +155,7 @@ export default {
       items: {},
       pageSetting: {
         index: 1,
-        interval: 20
+        interval: 21
       },
       types: [
         {value: 1, text: "雑談"},
@@ -229,6 +229,7 @@ export default {
             created_at: today
           }
         ],
+        good: 0,
         created_at: now,
         updated_at: now
       }

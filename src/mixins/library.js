@@ -10,8 +10,8 @@ export default{
     },
     TYPE_COLOR(){
       return {
-        1: "orange",
-        2: "cyan"
+        1: "#FF8F00",
+        2: "#00ACC1"
       }
     },
     TALK_TYPE(){

@@ -325,7 +325,7 @@ export default {
       this.dialog.isShow = false
     },
     async refresh(){
-      await firebaseConfig.onAuth()
+      // await firebaseConfig.onAuth()
       let data = await this.RefreshBuyList()
       // 初期化
       for(let i=1; i<=data.count; i++){

@@ -29,18 +29,11 @@
       <ul class="chat-choco oneArea">
         <li v-for="(content,index) in reply" :key="index" class="onebox" :class="{'owner': content.uid == uid, 'myself': content.uid == user.uid,'member': content.uid != user.uid}">
           <div class="fukiArea">
-            <v-avatar color="" size="30" v-if="content.uid == uid">
-              <img
-                src="@/assets/imgs/avatars/100.gif"
-                alt="John"
-              >
+            <v-avatar color="" size="30" v-if="content.uid == user.uid">
+               <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,true)">
             </v-avatar>
             <v-avatar size="30" v-else>
-              <img
-                src="@/assets/imgs/avatars/101.gif"
-                alt="John"
-                style="transform: scale(-1, 1);"
-              >
+              <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,false)">
             </v-avatar>
             <div>
               <div class="fukidasi">
@@ -83,9 +76,18 @@
       </v-row>
     </div>
     <div class="panel-choco">
-      <div class="good ma-2">
-        <v-icon left color="red lighten-2" @click="sendGood()">mdi-thumb-up</v-icon>
-        <span>{{good}}</span>
+      <div class="good mx-2">
+        <template v-if="isGood">
+          <v-btn text icon color="pink" @click="removeGood()">
+            <v-icon>mdi-thumb-up</v-icon>
+          </v-btn>
+        </template>
+        <template v-else>
+          <v-btn text icon color="red lighten-2" @click="sendGood()">
+            <v-icon>mdi-thumb-up</v-icon>
+          </v-btn>
+        </template>
+        <span class="text-choco-dark">{{good}}</span>
       </div>
       <v-btn class="mx-2 back" fab dark small color="#1E2E58" @click="$emit('closeReply'); closeListener()">
         <v-icon dark>mdi-undo</v-icon>
@@ -121,12 +123,17 @@ export default {
         isShow: false,
         isClicked: false
       },
+      isGood: false,
+      canGood: true,
       members: {
       },
-      listener: null
+      listener: () => {}
     }
   },
   methods: {
+    tableScroll() {
+      this.scrollTo(this.$refs.comment_table,"bottom",600)
+    },
     setKind(kind) {
       this.kind = kind
     },
@@ -134,16 +141,17 @@ export default {
       let t = this
       t.listener = firebase.firestore().collection("comments").doc(itemId).onSnapshot(function (querySnapshot) {
         t.refresh(itemId)
-        t.refreshNotice(t.user.uid)
       })
     },
     closeListener() {
       this.listener()
     },
     async sendGood(){
+      if(!this.canGood) return
+      this.canGood = false
       let noticeRef = this.db.collection("notices").doc(this.user.uid)
       let msgRef = this.db.collection("comments").doc(this.itemId)
-      let listRef = this.db.collection("lists").doc(this.itemId)
+      let listRef = this.db.collection(this.kind).doc(this.itemId)
 
       let now = firebase.firestore.FieldValue.serverTimestamp()
 
@@ -157,12 +165,42 @@ export default {
       await msgRef.update({
          ...msgData 
       })
+      await this.refreshNotice()
+      this.canGood = true
+    },
+    async removeGood(){
+      if(!this.canGood) return
+      this.canGood = false
+      let noticeRef = this.db.collection("notices").doc(this.user.uid)
+      let msgRef = this.db.collection("comments").doc(this.itemId)
+      let listRef = this.db.collection(this.kind).doc(this.itemId)
+
+      let now = firebase.firestore.FieldValue.serverTimestamp()
+
+      let msgData = {
+        updated_at: now,
+        good: firebase.firestore.FieldValue.increment(-1)
+      }
+      await noticeRef.update({
+        items: firebase.firestore.FieldValue.arrayRemove(listRef)
+      })
+      await msgRef.update({
+         ...msgData 
+      })
+      await this.refreshNotice()
+      this.canGood = true
     },
     async refreshNotice(){
       let noticeRef = await firebase.firestore().collection("notices").doc(this.user.uid)
       let noticeData = await noticeRef.get()
       this.notices = noticeData.data()
-      // console.log(this.notices)
+      for(let notice of this.notices.items) {
+        if(notice.id == this.itemId){
+          this.isGood = true
+          return
+        }
+      }
+      this.isGood = false
     },
     async refresh(itemId){
       let t = this
@@ -172,7 +210,10 @@ export default {
       let itemData = await itemRef.get()
 
       for(let content of commentData.reply){
+        // 読み込み回数軽減
         if(!this.members[content.uid]){
+          this.members[content.uid] = await this.GetUserById(content.uid)
+        }else if(content.uid == this.user.uid){
           this.members[content.uid] = await this.GetUserById(content.uid)
         }
       }
@@ -196,7 +237,6 @@ export default {
         this.name = itemData.data().title
         this.price = null
       }
-      this.scrollTo(this.$refs.comment_table,"bottom",600)
     },
     async sendChat(){
       if(!this.chat.value) return
@@ -224,6 +264,7 @@ export default {
       this.chat.value = ""
       this.chat.isShow = false
       this.chat.isClicked = false
+      this.tableScroll()
     },
   },
   computed: {
@@ -274,7 +315,7 @@ $base_color_4: #1E2E58;
     tr{
       &:first-of-type{
         td{
-          // padding-right: 70px;
+          padding-right: 70px;
         }
       }
       &:last-of-type{

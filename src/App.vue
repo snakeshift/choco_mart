@@ -18,8 +18,6 @@ if(isiOS) {
   }
 }
 
-import firebaseConfig from '@/plugins/firebase'
-
 export default {
   name: 'App',
   components: {

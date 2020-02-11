@@ -65,6 +65,57 @@ export default{
 
       return `${year}年${month}月${day}(${weekDay}) ${hour}:${min}`
     },
+    getFormatedShortDate (timeStamp) {
+      const date = new Date(timeStamp * 1000)
+      const now = new Date()
+      const hour = ( date.getHours()   < 10 ) ? '0' + date.getHours()   : date.getHours()
+      const min  = ( date.getMinutes() < 10 ) ? '0' + date.getMinutes() : date.getMinutes()
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+
+      return (date < yesterday) ? "数日前" : date.getDate() == now.getDate() ? `今日 ${hour}:${min}` : `昨日 ${hour}:${min}`
+    },
+    getIconImageStyle (imgNo,isOwn) {
+      let styles = ""
+      let imgStyleData = {}
+
+      const px_25 = ["1","2","3","4","5","9","10","11","12","13","14","15","28","29","30"]
+
+      const ratio = {
+        1: [36,32], 2: [36,32], 3: [36,32], 4: [36,32], 5: [36,32],
+        6: [62,58], 7: [62,58], 8: [62,58],
+        9: [33,36], 10:[33,36],
+        11:[35,29], 12:[35,29], 13:[35,29], 14:[35,29], 15:[35,29],
+        16:[43,42], 17:[43,42], 18:[43,42], 19:[43,42], 20:[43,42],
+        21:[45,43], 22:[45,43], 23:[45,43], 24:[45,43], 25:[45,43],
+        26:[39,33], 27:[39,33],
+        28:[31,34], 29:[31,34], 30:[31,34],
+        31:[55,67], 32:[55,67], 33:[55,67],
+        34:[67,80], 35:[67,80],
+        36:[69,68], 37:[76,69],
+        100:[43,47], 101:[54,48]
+      }
+
+      for(let img in ratio) {
+        const baseSize = (px_25.indexOf(img) >= 0) ? 25 : 30
+        if(ratio[img][0] >= ratio[img][1]) {
+          imgStyleData[img] = {
+            width: baseSize,
+            height: baseSize * ratio[img][1]/ratio[img][0]
+          }
+        }else{
+          imgStyleData[img] = {
+            width: baseSize * ratio[img][0]/ratio[img][1],
+            height: baseSize
+          }
+        }
+      }
+
+      styles += `width: ${imgStyleData[imgNo].width}px; height: ${imgStyleData[imgNo].height}px;`
+      if(isOwn) {
+        styles += "transform: scale(-1, 1);"
+      }
+      return styles
+    },
     trimText (text,limit) {
       return text.length > limit ? (text).slice(0,limit-1)+".." : text
     },

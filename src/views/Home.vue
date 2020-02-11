@@ -14,7 +14,7 @@
                   <div class="input-text-choco back-choco-dark">
                     <label for="user_name" class="text-choco body-2">名前</label>
                     <input v-if="!User.displayName" type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" v-model="user_name">
-                    <input v-else type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者さん" maxlength="15" :value="User.displayName" readonly>
+                    <input v-else type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" :value="User.displayName" readonly>
                   </div>
                   <v-btn color="#1E2E58" fab dark class="ml-1 name-check" v-if="!is_empty(user_name) && !isSetUserName" @click="showNameDialog()">
                     <v-icon>mdi-check-bold</v-icon>
@@ -29,7 +29,7 @@
         <div class="tab-choco">
           <table class="item-tab-choco back-choco pa-2 pl-1" cellspacing="5">
             <tr class="item-th-choco text-choco body-2">
-              <th v-for="(content,index) in tabs" :key="index" @click="selected = index; isShow.comment = false" :class="{'isChecked': index == selected}">
+              <th v-for="(content,index) in tabs" :key="index" @click="selected = index; isShow.comment = false; $refs.comment.closeListener()" :class="{'isChecked': index == selected}">
                 {{content}}
               </th>
             </tr>
@@ -37,19 +37,22 @@
         </div>
         <div class="mx-2 content-choco">
           <transition name="slide-left">
-            <buy v-show="selected == 1 && !isShow.comment" @showReply = showReply></buy>
+            <buy v-if="isLoaded" v-show="selected == 1 && !isShow.comment" @showReply = showReply></buy>
           </transition>
           <transition name="slide-left">
-            <sell v-show="selected == 2 && !isShow.comment" @showReply = showReply></sell>
+            <sell v-if="isLoaded" v-show="selected == 2 && !isShow.comment" @showReply = showReply></sell>
           </transition>
           <transition name="slide-left">
-            <list v-show="selected == 3 && !isShow.comment" @showReply = showReply></list>
+            <list v-if="isLoaded" v-show="selected == 3 && !isShow.comment" @showReply = showReply></list>
           </transition>
           <transition name="slide-left">
-            <talk v-show="selected == 4 && !isShow.comment" @showReply = showReply></talk>
+            <talk v-if="isLoaded" v-show="selected == 4 && !isShow.comment" @showReply = showReply></talk>
           </transition>
           <transition name="slide-left">
-            <comment v-show="isShow.comment" ref="comment" @closeReply = closeReply></comment>
+            <mypage v-if="isLoaded" v-show="selected == 5 && !isShow.comment" @showReply = showReply></mypage>
+          </transition>
+          <transition name="slide-left">
+            <comment v-if="isLoaded" v-show="isShow.comment" ref="comment" @closeReply = closeReply></comment>
           </transition>
         </div>
       </v-card>
@@ -90,6 +93,7 @@ import buy from '@/components/buy.vue'
 import sell from '@/components/sell.vue'
 import list from '@/components/list.vue'
 import talk from '@/components/talk.vue'
+import mypage from '@/components/mypage.vue'
 
 import comment from '@/components/comment.vue'
 
@@ -100,6 +104,7 @@ export default {
     sell,
     list,
     talk,
+    mypage,
     comment
   },
   data () {
@@ -109,8 +114,9 @@ export default {
         2: "出品する",
         3: "取引一覧",
         4: "雑談",
-        10: "通知",
+        5: "お気に入り",
       },
+      isLoaded: false,
       selected: 1,
       user_name: "",
       isSetUserName: false,
@@ -156,6 +162,10 @@ export default {
       this.$refs.comment.setKind(kind)
       this.$refs.comment.init(itemId,kind)
       await this.$refs.comment.refresh(itemId,kind)
+      await this.$refs.comment.refreshNotice()
+
+      this.$refs.comment.tableScroll()
+
       this.isShow.comment = !this.isShow.comment
     },
     closeReply(){
@@ -193,6 +203,8 @@ export default {
         userRef.update({
           updated_at: firebase.firestore.FieldValue.serverTimestamp()
         })
+        store.commit('auth/setUserInfo', doc.data());
+        _this.isLoaded = true
       }else{
         // 認証情報が取れていなければ初期化ページに飛ばす
         _this.$router.push('/')
@@ -211,7 +223,11 @@ $base_color_3: #E1CABB;
 $base_color_4: #1E2E58;
 
 input{
-  font-size: 14px;
+  font-size: 16px;
+}
+
+.updated_time{
+  font-size: 12.5px;
 }
 
 .morico{
@@ -220,7 +236,7 @@ input{
   background-image: url("../assets/imgs/mohu.png");
   width: 70px;
   height: 70px;
-  bottom: 0;
+  bottom: -10px;
   right: 10px;
 }
 .choco-mart{
@@ -320,6 +336,7 @@ input{
   }
 }
 .table-choco{
+  -webkit-overflow-scrolling: touch;
   border: 3px solid $base_color_2 !important;
   border-radius: 6px;
   overflow: auto;
