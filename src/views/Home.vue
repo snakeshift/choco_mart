@@ -3,7 +3,7 @@
     <v-row justify="center" class="choco-mart">
       <v-card class="border-choco back-choco">
         <v-toolbar dark color="#1E2E58" height="30" style="border-radius: unset;">
-          <v-toolbar-title class="body-2 text-choco">チョコットマートα版</v-toolbar-title>
+          <v-toolbar-title class="body-2 text-choco">チョコットマート</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
         <div three-line subheader class="back-choco pb-0">
@@ -151,9 +151,18 @@ export default {
   },
   methods: {
     async setUserName () {
-      await this.SetUserName(this.user_name)
-      this.isSetUserName = true
-      this.dialog.isShow = false
+      let isSetCorrectly = await this.SetUserName(this.user_name)
+      if(isSetCorrectly) {
+        this.isSetUserName = true
+        this.dialog.isShow = false
+      }else{
+        this.dialog.content = `
+        <p>その名前は既に使われています。</p>`
+        this.dialog.button.positive.func = () => {
+          this.dialog.isShow = false
+        }
+      }
+
     },
     logout() {
       firebaseConfig.logout()

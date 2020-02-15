@@ -16,17 +16,35 @@ export default{
       })
       return data
     },
+    async GetUsersName() {
+      let usersRef = firebase.firestore().collection("users")
+      let usersName = []
+      await usersRef.get().then(function(doc){
+        for(let user of doc.docs){
+          let userData = user.data()
+          usersName.push(userData.name)
+        }
+      })
+      return usersName
+    },
     async SetUserName (user_name) {
       let user = await firebase.auth().currentUser;
       let userRef = firebase.firestore().collection("users").doc(user.uid)
 
-      if(user) {
-        user.updateProfile({
-          displayName: user_name
-        })
-        userRef.update({
-          name: user_name
-        })
+      const names = await this.GetUsersName()
+      if (names.indexOf(user_name) >= 0){
+        // 存在する
+        return false
+      }else{
+        if(user) {
+          user.updateProfile({
+            displayName: user_name
+          })
+          userRef.update({
+            name: user_name
+          })
+        }
+        return true
       }
     },
     async RefreshUser () {
