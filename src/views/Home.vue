@@ -80,6 +80,7 @@
         </div>
       </v-dialog>
     </v-row>
+    <loading></loading>
   </div>
 </template>
 
@@ -94,8 +95,8 @@ import sell from '@/components/sell.vue'
 import list from '@/components/list.vue'
 import talk from '@/components/talk.vue'
 import mypage from '@/components/mypage.vue'
-
 import comment from '@/components/comment.vue'
+import loading from '@/components/loading.vue'
 
 export default {
   name: 'Home',
@@ -105,7 +106,8 @@ export default {
     list,
     talk,
     mypage,
-    comment
+    comment,
+    loading
   },
   data () {
     return {
@@ -117,6 +119,7 @@ export default {
         5: "お気に入り",
       },
       isLoaded: false,
+      isLoading: true,
       selected: 1,
       user_name: "",
       isSetUserName: false,
@@ -168,14 +171,15 @@ export default {
       firebaseConfig.logout()
     },
     async showReply(itemId,kind) {
+      store.commit('loading/setIsLoading', true)
       this.$refs.comment.setKind(kind)
       this.$refs.comment.init(itemId,kind)
       await this.$refs.comment.refresh(itemId,kind)
       await this.$refs.comment.refreshNotice()
 
       this.$refs.comment.tableScroll()
-
       this.isShow.comment = !this.isShow.comment
+      store.commit('loading/setIsLoading', false)
     },
     closeReply(){
       this.isShow.comment = !this.isShow.comment

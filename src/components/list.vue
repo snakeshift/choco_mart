@@ -75,6 +75,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
+import store from '@/store'
 
 export default {
   data () {
