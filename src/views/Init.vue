@@ -2,7 +2,6 @@
   <div class="init">
     <div class="init_display">
       <div class="init_head"></div>
-      <div class="init_foot">{{statusMsg}}..</div>
     </div>
     <loading></loading>
   </div>
@@ -17,7 +16,6 @@ export default {
   name: 'Init',
   data () {
     return {
-      statusMsg: "ユーザー情報認証中"
     }
   },
   components: {
@@ -25,6 +23,7 @@ export default {
   },
   created(){
     store.commit('loading/setIsLoading', true)
+    store.commit('loading/setStatusMsg', "読み込み中..")
   },
   async mounted () {
     let t = this
@@ -39,12 +38,12 @@ export default {
 
     await userRef.get().then(function(doc) {
       if (doc.exists) {
-        t.statusMsg = "ユーザー情報更新中"
+        store.commit('loading/setStatusMsg', "ユーザー情報更新中..")
         userRef.update({
           updated_at: firebase.firestore.FieldValue.serverTimestamp()
         })
       } else {
-        t.statusMsg = "初回ユーザー情報作成中"
+        store.commit('loading/setStatusMsg', "初回ユーザー情報作成中..")
         // 初期設定(ユーザー)
         userRef.set({
           updated_at: firebase.firestore.FieldValue.serverTimestamp(),
@@ -66,7 +65,7 @@ export default {
         })
       }
     });
-    t.statusMsg = "ユーザー更新完了"
+    store.commit('loading/setStatusMsg', "ユーザー更新完了..")
     setTimeout(function(){
       t.$router.push('home')
       store.commit('loading/setIsLoading', false)

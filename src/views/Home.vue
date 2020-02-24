@@ -171,6 +171,7 @@ export default {
       firebaseConfig.logout()
     },
     async showReply(itemId,kind) {
+      store.commit('loading/setStatusMsg', "読み込み中..")
       store.commit('loading/setIsLoading', true)
       this.$refs.comment.setKind(kind)
       this.$refs.comment.init(itemId,kind)
