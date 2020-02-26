@@ -119,7 +119,6 @@ export default {
         5: "お気に入り",
       },
       isLoaded: false,
-      isLoading: true,
       selected: 1,
       user_name: "",
       isSetUserName: false,
@@ -165,14 +164,13 @@ export default {
           this.dialog.isShow = false
         }
       }
-
     },
     logout() {
       firebaseConfig.logout()
     },
     async showReply(itemId,kind) {
-      store.commit('loading/setStatusMsg', "読み込み中..")
       store.commit('loading/setIsLoading', true)
+      store.commit('loading/setStatusMsg', "読み込み中..")
       this.$refs.comment.setKind(kind)
       this.$refs.comment.init(itemId,kind)
       await this.$refs.comment.refresh(itemId,kind)
@@ -224,6 +222,11 @@ export default {
         _this.$router.push('/')
       }
     })
+  },
+  computed: {
+    ...mapGetters({
+      isLoading: 'loading/isLoading'
+    }),
   },
   watch: {
   },

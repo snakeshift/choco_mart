@@ -2,19 +2,12 @@
     <div class="load">
         <transition name="fade">
             <v-overlay :value="isLoading" v-show="isLoading" opacity="0.3">
-                <div class="statusMsg">{{statusMsg}}</div>
                 <v-row class="loading">
                     <v-img src="@/assets/imgs/piramon.png" class="piramon"></v-img>
-                    <v-img src="@/assets/imgs/load.gif" class="loadIcon"></v-img>
-                    <!-- <div class="now_loading">
-                        <span class="moveText">読</span>
-                        <span class="moveText">み</span>
-                        <span class="moveText">込</span>
-                        <span class="moveText">み</span>
-                        <span class="moveText">中</span>
-                        <span class="moveText">.</span>
-                        <span class="moveText">.</span>
-                    </div> -->
+                    <div class="loadIcon">
+                        <v-img src="@/assets/imgs/load.gif"></v-img>
+                        <div class="statusMsg">{{statusMsg}}</div>
+                    </div>
                 </v-row>
                 <Snowf
                     :amount="amount"
@@ -79,15 +72,6 @@ export default {
 
 <style lang="scss">
 .load{
-    .statusMsg{
-        position: absolute;
-        top: 55%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-        font-family: "choco";
-        // display: inline-block;
-        // animation: pyon .7s ease infinite alternate;
-    }
     .loading{
         position: fixed;
         bottom: 15px;
@@ -115,8 +99,17 @@ export default {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%,-50%) scale(-1,1);
             width: 300px;
+            height: 60px;
+            transform: translate(-50%,-50%);
+            &>.v-image{
+                transform: scale(-1,1);
+                height: 100%;
+            }
+            .statusMsg{
+                text-align: center;
+                font-family: "choco";
+            }
         }
         img{
         }

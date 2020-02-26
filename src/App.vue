@@ -44,9 +44,9 @@ export default {
   transition-duration: .5s;
 }
 .fade-enter-active {
-  transition-delay: .5s;
+  // transition-delay: .5s;
 }
 .fade-enter, .fade-leave-active {
-  opacity: 0
+  opacity: 0;
 }
 </style>

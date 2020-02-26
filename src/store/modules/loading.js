@@ -2,7 +2,7 @@ export const loading = {
     namespaced: true,
     state: {
       isLoading: false,
-      statusMsg: ""
+      statusMsg: "読み込み中"
     },
     getters: {
       isLoading(state) {
