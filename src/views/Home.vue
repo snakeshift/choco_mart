@@ -243,6 +243,11 @@ input{
   font-size: 16px;
 }
 
+textarea{
+  margin-top: 0 !important;
+  padding-top: 10px !important;
+}
+
 .updated_time{
   font-size: 12.5px;
 }
@@ -475,7 +480,7 @@ input{
 }
 
 .text-normal{
-  font-family: sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: bold;
 }
 .text-choco-dark{

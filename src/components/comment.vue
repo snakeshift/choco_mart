@@ -60,7 +60,6 @@
                 v-model="chat.value"
                 no-resize
                 height="180px"
-                class="text-normal"
               ></v-textarea>
             </div>
             <div class="footer">
@@ -236,6 +235,11 @@ export default {
       }else if(this.kind == "talks"){
         this.name = itemData.data().title
         this.price = null
+      }
+
+      // スクロール位置が下の方であれば
+      if(this.$refs.comment_table.scrollHeight - this.$refs.comment_table.scrollTop < 1300){
+        this.tableScroll()
       }
     },
     async sendChat(){
