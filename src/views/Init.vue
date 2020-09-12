@@ -74,30 +74,35 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .init{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 100;
-}
-.init_head{
-  position: absolute;
-  height: 50px;
-  width: 250px;
-  top: 15px;
-  left: 10px;
-  background-size: contain;
-  background-image: url("../assets/imgs/game_title.png");
-  background-repeat: no-repeat;
-  z-index: 10;
-}
-.init_foot{
-  position: absolute;
-  top: 56%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  text-align: center;
-  font-size: 18px;
-  z-index: 10;
-  color: #fff;
-  font-family: "choco";
+  &_head {
+    position: absolute;
+    height: 50px;
+    width: 250px;
+    top: 15px;
+    left: 10px;
+    background-size: contain;
+    background-image: url("../assets/imgs/game_title.png");
+    background-repeat: no-repeat;
+    z-index: 10;
+  }
+  &_foot {
+    position: absolute;
+    top: 56%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    font-size: 18px;
+    z-index: 10;
+    color: #fff;
+    font-family: "choco";
+  }
 }
 </style>

@@ -2,19 +2,19 @@
   <v-app>
     <div class="wall"></div>
     <transition name="fade">
-      <router-view></router-view>
+      <router-view class="h100p"></router-view>
     </transition>
   </v-app>
 </template>
 
 <script>
-const ua = navigator.userAgent.toLowerCase();
-const isiOS = (ua.indexOf('iphone') > -1) || (ua.indexOf('ipad') > -1);
+const ua = navigator.userAgent.toLowerCase()
+const isiOS = (ua.indexOf('iphone') > -1) || (ua.indexOf('ipad') > -1)
 if(isiOS) {
-  const viewport = document.querySelector('meta[name="viewport"]');
+  const viewport = document.querySelector('meta[name="viewport"]')
   if(viewport) {
-    let viewportContent = viewport.getAttribute('content');
-    viewport.setAttribute('content', viewportContent + ', user-scalable=no');
+    const viewportContent = viewport.getAttribute('content')
+    viewport.setAttribute('content', viewportContent + ', user-scalable=no')
   }
 }
 
@@ -31,22 +31,13 @@ export default {
 </script>
 
 <style lang="scss">
+@import "./assets/scss/index.scss";
 .wall{
-  height: 100vh;
+  height: 100%;
   width: 100vw;
   position: absolute;
   background-size: cover;
   background-image: url("./assets/imgs/odarimu.png");
-  background-color: #FFEAC8;
-}
-.fade-enter-active, .fade-leave-active {
-  transition-property: opacity;
-  transition-duration: .5s;
-}
-.fade-enter-active {
-  // transition-delay: .5s;
-}
-.fade-enter, .fade-leave-active {
-  opacity: 0;
+  background-color: $base_color_1;
 }
 </style>

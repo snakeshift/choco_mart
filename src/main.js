@@ -6,7 +6,6 @@ import './registerServiceWorker'
 import vuetify from './plugins/vuetify'
 import './plugins/firebase'
 
-import './assets/scss/style.scss'
 import { firestorePlugin } from 'vuefire'  
 import firebaseConfig from './plugins/firebase';
 import 'firebase/firestore'

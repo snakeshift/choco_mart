@@ -1,74 +1,67 @@
 <template>
-  <div>
-    <div class="table-choco list" ref="list_table">
-      <div>
-        <table class="item-table-choco back-choco" cellspacing="0">
-          <thead>
-            <tr class="item-th-choco text-choco body-2">
-              <th>装備名</th>
-              <th>価格</th>
-              <th>返</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'lists')">
-              <td>
-                <div class="item-input-choco">
-                  <v-chip dark :color="(item.status == 3) ? '' : TYPE_COLOR[item.type]" x-small class="chip">{{(item.status == 3) ? "終" : TYPE[item.type]}}</v-chip>
-                  <span type="text" class="text-choco-dark pl-12">
-                    <template v-if="$vuetify.breakpoint.xs">
-                      {{trimText(item.name,12)}}
-                    </template>
-                    <template v-else>
-                      {{trimText(item.name,30)}}
-                    </template>                  
-                  </span>
-                </div>
-              </td>
-              <td>
-                <div class="item-input-choco">
-                  <span class="text-choco-dark">{{trimText(item.price,5)}}</span>
-                </div>
-              </td>
-              <td>
-                <div class="item-input-choco">
-                  <span class="text-choco-dark link pointer">{{item.reply}}</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <v-row justify="center">
-        <v-dialog
-          v-model="dialog.isShow"
-          max-width="290"
-        >
-          <div class="modal-choco">
-            <div class="head text-choco pl-2 body-2">
-              {{dialog.title}}
-            </div>
-            <div class="body text-choco-dark pa-2">
-              <p v-html="dialog.content"></p>
-            </div>
-            <div class="footer">
-              <button v-if="dialog.button.positive.isShow" @click="dialog.button.positive.func()">OK</button>
-              <button v-if="dialog.button.negative.isShow" @click="dialog.button.negative.func()">キャンセル</button>
-            </div>
-          </div>
-        </v-dialog>
-      </v-row>
-      <ul class="pager">
-        <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
-          <template v-if="pageSetting.index == n">
-            <v-icon color="primary">mdi-numeric-{{n}}-box</v-icon>
-          </template>
-          <template v-else>
-            <v-icon>mdi-numeric-{{n}}-box</v-icon>
-          </template>
-        </li>
-      </ul>
+  <div class="table-choco list" ref="list_table">
+    <div>
+      <table class="item-table-choco back-choco" cellspacing="0">
+        <thead>
+          <tr class="item-th-choco text-choco body-2">
+            <th>装備名</th>
+            <th>価格</th>
+            <th>返</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'lists')">
+            <td>
+              <div class="item-input-choco">
+                <v-chip dark :color="(item.status == 3) ? '' : TYPE_COLOR[item.type]" x-small class="chip">{{(item.status == 3) ? "終" : TYPE[item.type]}}</v-chip>
+                <span type="text" class="text-choco-dark pl-12 text-truncate">
+                  {{ item.name }}                 
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="item-input-choco">
+                <span class="text-choco-dark text-truncate">{{ item.price }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="item-input-choco">
+                <span class="text-choco-dark link pointer text-truncate">{{item.reply}}</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    <v-row justify="center">
+      <v-dialog
+        v-model="dialog.isShow"
+        max-width="290"
+      >
+        <div class="modal-choco">
+          <div class="head text-choco pl-2 body-2">
+            {{dialog.title}}
+          </div>
+          <div class="body text-choco-dark pa-2">
+            <p v-html="dialog.content"></p>
+          </div>
+          <div class="footer">
+            <button v-if="dialog.button.positive.isShow" @click="dialog.button.positive.func()">OK</button>
+            <button v-if="dialog.button.negative.isShow" @click="dialog.button.negative.func()">キャンセル</button>
+          </div>
+        </div>
+      </v-dialog>
+    </v-row>
+    <ul class="pager">
+      <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
+        <template v-if="pageSetting.index == n">
+          <v-icon color="primary">mdi-numeric-{{n}}-box</v-icon>
+        </template>
+        <template v-else>
+          <v-icon>mdi-numeric-{{n}}-box</v-icon>
+        </template>
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -171,12 +164,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
-$base_color_1: #FFEAC8;
-$base_color_2: #B1A3A7;
-$base_color_3: #E1CABB;
-$base_color_4: #1E2E58;
-
+<style lang="scss" scoped>
 .list{
   &>div{
     padding: 9px;
@@ -186,82 +174,19 @@ $base_color_4: #1E2E58;
       border-radius: 7px;
     }
   }
-  .item-table-choco{
-    // overflow: hidden;
-    tbody{
-      background-color: $base_color_3;
-    }
-  }
   .item-th-choco{
     th{
       &:first-of-type{
-        width: 220px;
+        width: auto;
+        max-width: 200px;
       }
       &:nth-of-type(2){
-        width: 70px;
+        width: 17%;
         text-align: left;
       }
       &:last-of-type{
+        width: 2rem;
       }
-    }
-  }
-  .item-td-choco{
-    td{
-      border-bottom: 1px solid #B1A3A7;
-      &:first-of-type{
-        div{
-          span{
-            &:last-of-type{
-              padding-top: 2px;
-            }
-          }
-        }
-      }
-      &:nth-of-type(2){
-        div{
-          span{
-            padding-top: 2px;
-          }
-        }
-      }
-      &:last-of-type{
-        div{
-          justify-content: center;
-        }
-      }
-    }
-    &:last-of-type{
-      td{
-        border-bottom: 0;
-      }
-    }
-  }
-  .item-type-choco{
-    &>button{
-      // width: 45px;
-      // min-width: 45px !important;
-    }
-  }
-  .item-input-choco{
-    position: relative;
-    background-color: transparent;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    .chip{
-      position: absolute;
-      top: 9px;
-      left: 6px;
-      height: 18px;
-      padding-left: 10px;
-      padding-right: 10px;
-      letter-spacing: 0px !important;
-      font-size: 13px !important;
-      overflow: visible;
-    }
-    input{
-      background-color: transparent;
-      height: 35px;
     }
   }
 }

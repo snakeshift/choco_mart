@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h100p">
     <div class="comment table-choco" ref="comment_table">
       <table class="item-table-choco back-choco body-2" cellspacing="0">
         <tr>
@@ -102,7 +102,7 @@
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
 import firebaseConfig from '@/plugins/firebase'
-import '@/assets/scss/chat.scss'
+import '@/assets/scss/components/chat.scss'
 
 export default {
   data () {
@@ -281,12 +281,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
-$base_color_1: #FFEAC8;
-$base_color_2: #B1A3A7;
-$base_color_3: #E1CABB;
-$base_color_4: #1E2E58;
-
+<style lang="scss" scoped>
 .comment{
   &.table-choco{
     padding: 9px;

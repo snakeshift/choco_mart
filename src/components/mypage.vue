@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h100p">
     <div class="table-choco mypage" ref="mypage_table">
       <div>
         <table class="item-table-choco back-choco" cellspacing="0">
@@ -25,36 +25,26 @@
                       {{TYPE[item.type]}}
                     </template>
                   </v-chip>
-                  <span type="text" class="text-choco-dark pl-12">
-                    <template v-if="$vuetify.breakpoint.xs">
-                      <span v-if="item.title">
-                        {{trimText(item.title,12)}}
-                      </span>
-                      <span v-else>
-                        {{trimText(item.name,12)}}
-                      </span>
+                  <span type="text" class="text-choco-dark pl-12 text-truncate">
+                    <template v-if="item.title">
+                      {{item.title}}
                     </template>
                     <template v-else>
-                      <span v-if="item.title">
-                        {{trimText(item.title,30)}}
-                      </span>
-                      <span v-else>
-                        {{trimText(item.name,30)}}
-                      </span>
-                    </template>                  
+                      {{item.name}}
+                    </template>
                   </span>
                 </div>
               </td>
               <td>
                 <div class="item-input-choco">
                   <template v-if="item.updated_at">
-                    <span class="text-choco-dark updated_time">{{getFormatedShortDate(item.updated_at.seconds)}}</span>
+                    <span class="text-choco-dark updated_time text-truncate">{{getFormatedShortDate(item.updated_at.seconds)}}</span>
                   </template>
                 </div>
               </td>
               <td>
                 <div class="item-input-choco">
-                  <span class="text-choco-dark link pointer">{{item.reply}}</span>
+                  <span class="text-choco-dark link pointer text-truncate">{{item.reply}}</span>
                 </div>
               </td>
             </tr>
@@ -215,32 +205,8 @@ export default {
 }
 </script>
 
-<style lang="scss">
-$base_color_1: #FFEAC8;
-$base_color_2: #B1A3A7;
-$base_color_3: #E1CABB;
-$base_color_4: #1E2E58;
-
+<style lang="scss" scoped>
 .mypage{
-  .user{
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    &_name{
-        width: 80%;
-        text-align: center;
-    }
-    &_icon{
-
-    }
-    &_profile{
-
-    }
-  }
-  &.table-choco{
-    height: calc(90vh - 30px - 46px - 54px - 19px);
-  }
   &>div{
     padding: 9px;
     padding-bottom: 0;
@@ -249,87 +215,26 @@ $base_color_4: #1E2E58;
       border-radius: 7px;
     }
   }
-  .item-table-choco{
-    // overflow: hidden;
-    tbody{
-      background-color: $base_color_3;
-    }
-  }
   .item-th-choco{
     th{
       &:first-of-type{
-        width: 220px;
+        width: auto;
       }
       &:nth-of-type(2){
-        width: 70px;
+        width: 25%;
         text-align: left;
       }
       &:last-of-type{
+        width: 2rem;
       }
     }
   }
-  .item-td-choco{
-    td{
-      border-bottom: 1px solid #B1A3A7;
-      &:first-of-type{
-        div{
-          span{
-            &:last-of-type{
-              padding-top: 2px;
-            }
-          }
-        }
-      }
-      &:nth-of-type(2){
-        div{
-          span{
-            padding-top: 2px;
-          }
-        }
-      }
-      &:last-of-type{
-        div{
-          justify-content: center;
-        }
-      }
-    }
-    &:last-of-type{
-      td{
-        border-bottom: 0;
-      }
-    }
+  .updated_time{
+    font-size: 12.5px;
   }
-  .item-type-choco{
-    &>button{
-      // width: 45px;
-      // min-width: 45px !important;
-    }
+  .icon_select_area{
+    width: 95vw;
+    max-width: 800px;
   }
-  .item-input-choco{
-    position: relative;
-    background-color: transparent;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    .chip{
-      position: absolute;
-      top: 9px;
-      left: 6px;
-      height: 18px;
-      padding-left: 10px;
-      padding-right: 10px;
-      letter-spacing: 0px !important;
-      font-size: 13px !important;
-      overflow: visible;
-    }
-    input{
-      background-color: transparent;
-      height: 35px;
-    }
-  }
-}
-.icon_select_area{
-  width: 95vw;
-  max-width: 800px;
 }
 </style>

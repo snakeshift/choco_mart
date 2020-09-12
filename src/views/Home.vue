@@ -233,25 +233,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
-$base_color_1: #FFEAC8;
-$base_color_2: #B1A3A7;
-$base_color_3: #E1CABB;
-$base_color_4: #1E2E58;
-
-input{
-  font-size: 16px;
-}
-
-textarea{
-  margin-top: 0 !important;
-  padding-top: 10px !important;
-}
-
-.updated_time{
-  font-size: 12.5px;
-}
-
+<style lang="scss" scoped>
 .morico{
   position: absolute;
   background-size: contain;
@@ -262,14 +244,13 @@ textarea{
   right: 10px;
 }
 .choco-mart{
+  height: 100%;
   margin: 0;
   &>div{
-    height: 90vh;
+    height: 90%;
     width: 95vw;
     max-width: 800px;
     margin: auto !important;
-    margin-top: 5vh !important;
-    margin-bottom: 5vh !important;
     overflow: hidden;
   }
 }
@@ -284,280 +265,11 @@ textarea{
     }
   }
 }
-.button-choco{
-  border: none !important;
-  color: #fff;
-  height: 38px !important;
-  // font-family: auto !important;
-  // font-weight: bold !important;
-  letter-spacing: 0px !important;
-  font-size: 13px !important;
-  box-shadow: -8px 0 0px -6px #3F66AE inset, 8px 0 0px -6px #3F66AE inset,0 -8px 5px -5px #3F66AE inset,0px 0px 0px 2px #fff !important;
-  &.danger{
-    background: #F46A6E !important;
-    box-shadow: -8px 0 0px -6px #F0373D inset, 8px 0 0px -6px #F0373D inset,0 -8px 5px -5px #F0373D inset,0px 0px 0px 2px #fff !important;
-  }
-}
-.link{
-  color: #1E88E5 !important;
-  text-decoration:underline;
-}
-.pointer{
-  cursor: pointer;
-}
-.pointer-none{
-  pointer-events: none;
-}
-.modal-choco{
-  height: 300px;
-  background-color: $base_color_1;
-  border: 3px solid $base_color_4;
-  position: relative;
-  .head{
-    background-color: $base_color_4;
-  }
-  .body{
-
-  }
-  .modal-textarea-choco{
-    .v-input__slot{
-      background-color: $base_color_3;
-      margin-bottom: 0;
-      textarea{
-        height: 100%;
-      }
-    }
-  }
-  .footer{
-    position: absolute;
-    bottom: 12px;
-    border: 0;
-    right: 4px;
-    button{
-      padding: 4px 12px;
-      border-radius: 5px;
-      background: $base_color_4;
-      color: #FFF;
-      font-family: "choco";
-      margin-right: 8px;
-    }
-  }
-}
-.input-text-choco{
-  display: inline-block;
-  border-radius: 6px;
-  background: $base_color_2 !important;
-  label{
-    padding: 10px;
-  }
-  input{
-    padding: 5px;
-    padding-left: 10px;
-    background-color: $base_color_3 !important;
-    border-radius: 0px 5px 5px 0px;
-  }
-}
-.table-choco{
-  -webkit-overflow-scrolling: touch;
-  border: 3px solid $base_color_2 !important;
-  border-radius: 6px;
-  overflow: auto;
-  overflow-x: hidden;
-  height: calc(90vh - 30px - 46px - 54px - 19px);
-
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
-}
-.item-table-choco{
-  width: 100%;
-  tbody{
-    tr{
-      &:first-of-type{
-        td{
-          &>div{
-            // margin-top: 8px;
-          }
-        }
-      }
-    }
-  }
-}
 .tab-choco{
   height: 54px;
 }
-.item-tab-choco{
-  &>tr{
-    background-color: unset;
-    &>th{
-      background-color: $base_color_2;
-      white-space: nowrap;
-      width: 6rem !important;
-      cursor: pointer;
-      &.isChecked{
-        background-color: $base_color_4;
-      }
-    }
-  }
-}
-.item-th-choco{
-  background-color: $base_color_2;
-  border-radius: 0px 5px 5px 0px;
-  th{
-    font-weight: normal !important;
-    padding: 4px;
-    &:first-of-type{
-      width: 60px;
-      border-radius: 6px 0px 0px 0px;
-      margin-right: 4px;
-    }
-    &:nth-of-type(3){
-      width: 60px;
-      margin-left: 4px;
-    }
-    &:last-of-type{
-      width: 40px;
-      border-radius: 0px 6px 0px 0px;
-      margin-left: 4px;
-    }
-  }
-}
-.item-td-choco{
-}
-.item-choco{
-  height: 40px;
-  margin-left: 0;
-  display: flex;
-  &>div{
-    align-items: center;
-    display: flex;
-  }
-}
-.item-type-choco{
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  &>button{
-    align-self: center;
-    width: 60px;
-    height: 40px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    &>input{
-      display: none;
-    }
-  }
-}
-.item-input-choco{
-  display: inline-block;
-  border-radius: 6px;
-  background: $base_color_2;
-  width: 100%;
-  height: 40px;
-  font-size: 14px;
-  input{
-    width: 100%;
-    height: 40px;
-    padding: 5px;
-    padding-left: 10px;
-    background-color: $base_color_3;
-    border-radius: 5px;
-  }
-}
 .content-choco{
   position: relative;
-}
-.text-choco{
-  color: $base_color_1;
-  font-family: 'choco';
-  &.body-2{
-    font-family: 'choco' !important;
-  }
-}
-
-.text-normal{
-  font-family: "Roboto", sans-serif;
-  font-weight: bold;
-}
-.text-choco-dark{
-  color: $base_color_4;
-  font-family: 'choco';
-  &.body-2{
-    font-family: 'choco' !important;
-  }
-}
-.border-choco{
-  border: 3px solid $base_color_4 !important;
-}
-.back-choco{
-  background-color: $base_color_1 !important;
-  height: 46px;
-}
-.back-choco-dark{
-  background-color: $base_color_4 !important;
-}
-.v-text-field__details{
-  display: none !important;
-}
-.v-list-item__content{
-  padding: 0 !important;
-}
-.v-list-item{
-  min-height: 60px !important;
-}
-// Transition
-.slide-left-leave-active,
-.slide-left-enter-active {
-  transition: opacity .4s, transform .4s ease-in-out;
-}
-.slide-left-leave-to,
-.slide-left-enter {
-  opacity: 0;
-  transform: translateX(-15px);
-}
-.slide-left-leave,
-.slide-left-enter-to {
-  opacity: 1;
-  transform: translateX(0);
-}
-.panel-choco{
-  .good{
-    position: absolute;
-    right: 15px;
-    top: 8px;
-    display: flex;
-    align-items: center;
-  }
-  .write{
-    position: absolute;
-    width: 47px;
-    height: 47px;
-    right: 5px;
-    top: calc(90vh - 30px - 46px - 54px - 75px);
-  }
-  .back{
-    position: absolute;
-    width: 47px;
-    height: 47px;
-    left: 5px;
-    top: calc(90vh - 30px - 46px - 54px - 75px);
-  }
-}
-.pager{
-  list-style: none;
-  display: flex;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-bottom: 12px;
-  &_li{
-    cursor: pointer;
-    .v-icon{
-      font-size: 28px;
-    }
-  }
+  height: 100%;
 }
 </style>

@@ -24,13 +24,8 @@
                 <input type="text" class="text-choco-dark" v-model="item.name">
               </template>
               <template v-else>
-                <span class="text-choco-dark">
-                  <template v-if="$vuetify.breakpoint.xs">
-                    {{trimText(item.name,12)}}
-                  </template>
-                  <template v-else>
-                    {{trimText(item.name,30)}}
-                  </template>
+                <span class="text-choco-dark text-truncate">
+                  {{item.name}}
                 </span>
               </template>
             </div>
@@ -382,48 +377,4 @@ export default {
 }
 </script>
 
-<style lang="scss">
-$base_color_1: #FFEAC8;
-$base_color_2: #B1A3A7;
-$base_color_3: #E1CABB;
-$base_color_4: #1E2E58;
-.buy{
-  .item-th-choco{
-    th{
-      &:first-of-type{
-        // width: 40px;
-      }
-      &:nth-of-type(3){
-      }
-      &:last-of-type{
-        width: 40px;
-      }
-    }
-  }
-  .item-type-choco{
-    &>button{
-      // width: 45px;
-      // min-width: 45px !important;
-    }
-  }
-  .item-input-choco{
-    display: inline-block;
-    border-radius: 6px;
-    background: $base_color_2;
-    width: 100%;
-    height: 40px;
-    font-size: 14px;
-    white-space: nowrap;
-    input,span{
-      display: flex;
-      align-items: center;
-      width: 100%;
-      height: 40px;
-      padding: 5px;
-      padding-left: 10px;
-      background-color: $base_color_3;
-      border-radius: 5px;
-    }
-  }
-}
-</style>
+<style lang="scss" scoped></style>
