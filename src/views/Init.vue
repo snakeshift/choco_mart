@@ -11,6 +11,9 @@
 import firebase from 'firebase'
 import store from '../store'
 import loading from '@/components/loading.vue'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
+import { CURRENT_TIME } from '@/config/firebase/util'
 
 export default {
   name: 'Init',
@@ -22,32 +25,29 @@ export default {
     loading
   },
   created(){
-    store.commit('loading/setIsLoading', true)
-    store.commit('loading/setStatusMsg', "読み込み中..")
+    this.setIsLoading(true)
+    this.setStatusMsg('読み込み中..')
   },
   async mounted () {
-    let t = this
-    let userData = await firebase.auth().signInAnonymously()
-    store.commit('auth/onAuthStateChanged', userData.user);
-    store.commit('auth/onUserStatusChanged', userData.user.uid ? true : false);
+    await this.getUserAnonymously()
 
-    let userRef = firebase.firestore().collection("users").doc(userData.user.uid)
-    let sellRef = firebase.firestore().collection("sells").doc(userData.user.uid)
-    let buyRef = firebase.firestore().collection("buys").doc(userData.user.uid)
-    let noticeRef = firebase.firestore().collection("notices").doc(userData.user.uid)
+    const userRef = USER_REF().doc(this.user.uid)
+    const sellRef = SELL_REF().doc(this.user.uid)
+    const buyRef = BUY_REF().doc(this.user.uid)
+    const noticeRef = NOTICE_REF().doc(this.user.uid)
 
     await userRef.get().then(function(doc) {
       if (doc.exists) {
-        store.commit('loading/setStatusMsg', "ユーザー情報更新中..")
+        this.setStatusMsg('ユーザー情報更新中..')
         userRef.update({
-          updated_at: firebase.firestore.FieldValue.serverTimestamp()
+          updated_at: CURRENT_TIME()
         })
       } else {
-        store.commit('loading/setStatusMsg', "初回ユーザー情報作成中..")
+        this.setStatusMsg('初回ユーザー情報作成中..')
         // 初期設定(ユーザー)
         userRef.set({
-          updated_at: firebase.firestore.FieldValue.serverTimestamp(),
-          created_at: firebase.firestore.FieldValue.serverTimestamp(),
+          updated_at: CURRENT_TIME(),
+          created_at: CURRENT_TIME(),
           name: "名も無き冒険者",
           icon: Math.floor( Math.random() * (37 + 1 - 1) ) + 1
         })
@@ -64,14 +64,28 @@ export default {
           items: []
         })
       }
-    });
-    store.commit('loading/setStatusMsg', "ユーザー更新完了..")
+    }.bind(this))
+    this.setStatusMsg('ユーザー更新完了..')
     setTimeout(function(){
-      t.$router.push('home')
-      store.commit('loading/setIsLoading', false)
-    },1500)
+      this.$router.push('home')
+      this.setIsLoading(false)
+    }.bind(this), 1500)
   },
-};
+  methods: {
+    ...mapMutations('loading', [
+      'setIsLoading',
+      'setStatusMsg'
+    ]),
+    ...mapActions('auth', [
+      'getUserAnonymously'
+    ])
+  },
+  computed: {
+    ...mapGetters('auth', [
+      'user'
+    ])
+  }
+}
 </script>
 
 <style lang="scss" scoped>

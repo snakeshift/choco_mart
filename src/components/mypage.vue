@@ -1,5 +1,5 @@
 <template>
-  <div class="h100p">
+  <div class="page-parent">
     <div class="table-choco mypage" ref="mypage_table">
       <div>
         <table class="item-table-choco back-choco" cellspacing="0">
@@ -51,7 +51,7 @@
           </tbody>
         </table>
       </div>
-      <v-row justify="center"></v-row>
+      <v-row justify="center" class="pa-0"></v-row>
       <ul class="pager">
         <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
           <template v-if="pageSetting.index == n">
@@ -62,29 +62,29 @@
           </template>
         </li>
       </ul>
-    </div>
-    <v-overlay :value="overlay">
+      <v-overlay :value="overlay">
         <v-row class="icon_select_area">
-            <v-col>
-                <v-btn class="mt-1 mb-1" fab dark small text icon v-for="n in 37" :key="n" @click="setIcon(n)">
-                    <v-avatar color="" size="30">
-                        <img :src="require('@/assets/imgs/avatars/'+n+'.gif')" :style="getIconImageStyle(n,true)">
-                    </v-avatar>
-                </v-btn>
-            </v-col>
+          <v-col>
+            <v-btn class="mt-1 mb-1" fab dark small text icon v-for="n in 37" :key="n" @click="setIcon(n)">
+              <v-avatar color="" size="30">
+                <img :src="require('@/assets/imgs/avatars/'+n+'.gif')" :style="getIconImageStyle(n,true)">
+              </v-avatar>
+            </v-btn>
+          </v-col>
         </v-row>
         <v-row>
-            <v-col class="d-flex justify-center">
-              <v-btn color="#487DF6" class="button-choco text-choco" dark @click="overlay = false">
-                <span>閉じる</span>
-              </v-btn>
-            </v-col>
+          <v-col class="d-flex justify-center">
+            <v-btn color="#487DF6" class="button-choco text-choco" dark @click="overlay = false">
+              <span>閉じる</span>
+            </v-btn>
+          </v-col>
         </v-row>
-    </v-overlay>
+      </v-overlay>
+    </div>
     <div class="panel-choco">
       <v-btn class="mx-2 write" fab dark small color="light-green lighten-2" @click="overlay = true">
         <v-avatar color="" size="30">
-            <img :src="require(`@/assets/imgs/avatars/${userInfo.icon}.gif`)" :style="getIconImageStyle(userInfo.icon,true)">
+          <img :src="require(`@/assets/imgs/avatars/${userInfo.icon}.gif`)" :style="getIconImageStyle(userInfo.icon,true)">
         </v-avatar>
       </v-btn>
     </div>
@@ -212,7 +212,7 @@ export default {
     padding-bottom: 0;
     table{
       border: 1px solid $base_color_2;
-      border-radius: 7px;
+      border-radius: 7px 7px 0 0;
     }
   }
   .item-th-choco{

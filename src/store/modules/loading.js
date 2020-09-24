@@ -1,4 +1,4 @@
-export const loading = {
+export default {
     namespaced: true,
     state: {
       isLoading: false,

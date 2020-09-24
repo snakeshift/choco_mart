@@ -1,15 +1,16 @@
 import firebase from 'firebase'
 import store from "@/store"
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
 
 export default{
   methods:{
     async GetUser () {
-      let user = await firebase.auth().currentUser;
+      let user = await firebase.auth().currentUser
       return user
     },
     async GetUserById (userId) {
-      let userRef = firebase.firestore().collection("users").doc(userId)
+      let userRef = USER_REF().doc(userId)
       let data
       await userRef.get().then(function(doc) {
         data = doc.data()
@@ -17,7 +18,7 @@ export default{
       return data
     },
     async GetUsersName() {
-      let usersRef = firebase.firestore().collection("users")
+      let usersRef = USER_REF()
       let usersName = []
       await usersRef.get().then(function(doc){
         for(let user of doc.docs){
@@ -28,8 +29,8 @@ export default{
       return usersName
     },
     async SetUserName (user_name) {
-      let user = await firebase.auth().currentUser;
-      let userRef = firebase.firestore().collection("users").doc(user.uid)
+      let user = await firebase.auth().currentUser
+      let userRef = USER_REF().doc(user.uid)
 
       const names = await this.GetUsersName()
       if (names.indexOf(user_name) >= 0){
@@ -49,8 +50,8 @@ export default{
     },
     async RefreshUser () {
       let userData = await firebase.auth().signInAnonymously()
-      store.commit('auth/onAuthStateChanged', userData.user);
-      store.commit('auth/onUserStatusChanged', userData.user.uid ? true : false);
+      store.commit('auth/onAuthStateChanged', userData.user)
+      store.commit('auth/onUserStatusChanged', userData.user.uid ? true : false)
     },
     async RefreshSellList () {
       let sellRef = firebase.firestore().collection("sells").doc(this.User.uid)

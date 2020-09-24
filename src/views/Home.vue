@@ -2,21 +2,21 @@
   <div>
     <v-row justify="center" class="choco-mart">
       <v-card class="border-choco back-choco">
-        <v-toolbar dark color="#1E2E58" height="30" style="border-radius: unset;">
+        <v-toolbar dark color="#1E2E58" height="30" class="border-initial">
           <v-toolbar-title class="body-2 text-choco">チョコットマート</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
         <div three-line subheader class="back-choco pb-0">
-          <div class="pl-2 pt-4" style="position: relative;">
+          <div class="pl-2 pt-4 pos-rel">
             <div>
               <v-row>
                 <v-col class="py-0">
                   <div class="input-text-choco back-choco-dark">
                     <label for="user_name" class="text-choco body-2">名前</label>
-                    <input v-if="!User.displayName" type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" v-model="user_name">
+                    <input v-if="!User.displayName" type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" v-model="userName">
                     <input v-else type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" :value="User.displayName" readonly>
                   </div>
-                  <v-btn color="#1E2E58" fab dark class="ml-1 name-check" v-if="!is_empty(user_name) && !isSetUserName" @click="showNameDialog()">
+                  <v-btn color="#1E2E58" fab dark class="ml-1 name-check" v-if="!is_empty(userName) && !isSetUserName" @click="showNameDialog()">
                     <v-icon>mdi-check-bold</v-icon>
                   </v-btn>
                 </v-col>
@@ -29,7 +29,7 @@
         <div class="tab-choco">
           <table class="item-tab-choco back-choco pa-2 pl-1" cellspacing="5">
             <tr class="item-th-choco text-choco body-2">
-              <th v-for="(content,index) in tabs" :key="index" @click="selected = index; isShow.comment = false; $refs.comment.closeListener()" :class="{'isChecked': index == selected}">
+              <th v-for="(content, index) in TABS" :key="index" @click="setTab(index)" :class="{'isChecked': index == selected}">
                 {{content}}
               </th>
             </tr>
@@ -37,19 +37,19 @@
         </div>
         <div class="mx-2 content-choco">
           <transition name="slide-left">
-            <buy v-if="isLoaded" v-show="selected == 1 && !isShow.comment" @showReply = showReply></buy>
+            <buy v-if="isLoaded" v-show="selected == TAB_TYPE.BUY && !isShow.comment" @showReply = showReply></buy>
           </transition>
           <transition name="slide-left">
-            <sell v-if="isLoaded" v-show="selected == 2 && !isShow.comment" @showReply = showReply></sell>
+            <sell v-if="isLoaded" v-show="selected == TAB_TYPE.SELL && !isShow.comment" @showReply = showReply></sell>
           </transition>
           <transition name="slide-left">
-            <list v-if="isLoaded" v-show="selected == 3 && !isShow.comment" @showReply = showReply></list>
+            <list v-if="isLoaded" v-show="selected == TAB_TYPE.LIST && !isShow.comment" @showReply = showReply></list>
           </transition>
           <transition name="slide-left">
-            <talk v-if="isLoaded" v-show="selected == 4 && !isShow.comment" @showReply = showReply></talk>
+            <talk v-if="isLoaded" v-show="selected == TAB_TYPE.TALK && !isShow.comment" @showReply = showReply></talk>
           </transition>
           <transition name="slide-left">
-            <mypage v-if="isLoaded" v-show="selected == 5 && !isShow.comment" @showReply = showReply></mypage>
+            <mypage v-if="isLoaded" v-show="selected == TAB_TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
           </transition>
           <transition name="slide-left">
             <comment v-if="isLoaded" v-show="isShow.comment" ref="comment" @closeReply = closeReply></comment>
@@ -89,6 +89,8 @@ import firebaseConfig from '@/plugins/firebase'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
 import store from '@/store'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
+import { CURRENT_TIME } from '@/config/firebase/util'
 
 import buy from '@/components/buy.vue'
 import sell from '@/components/sell.vue'
@@ -111,41 +113,26 @@ export default {
   },
   data () {
     return {
-      tabs: {
-        1: "求める",
-        2: "出品する",
-        3: "取引一覧",
-        4: "雑談",
-        5: "お気に入り",
-      },
       isLoaded: false,
       selected: 1,
-      user_name: "",
+      userName: '',
       isSetUserName: false,
-      types: [
-        {text: "買", type: 1},
-        {text: "売", type: 2},
-      ],
       isShow: {
         comment: false
       },
       dialog: {
         isShow: false,
-        title: "",
-        content: "",
+        title: '',
+        content: '',
         button: {
           positive: {
             isShow: false,
             isClicked: false,
-            func(){
-
-            }
+            func(){}
           },
           negative: {
             isShow: false,
-            func(){
-
-            }
+            func(){}
           }
         },
       },
@@ -153,7 +140,7 @@ export default {
   },
   methods: {
     async setUserName () {
-      let isSetCorrectly = await this.SetUserName(this.user_name)
+      let isSetCorrectly = await this.updateUserName({userName: this.userName})
       if(isSetCorrectly) {
         this.isSetUserName = true
         this.dialog.isShow = false
@@ -168,9 +155,9 @@ export default {
     logout() {
       firebaseConfig.logout()
     },
-    async showReply(itemId,kind) {
-      store.commit('loading/setIsLoading', true)
-      store.commit('loading/setStatusMsg', "読み込み中..")
+    async showReply(itemId, kind) {
+      this.setIsLoading(true)
+      this.setStatusMsg('読み込み中..')
       this.$refs.comment.setKind(kind)
       this.$refs.comment.init(itemId,kind)
       await this.$refs.comment.refresh(itemId,kind)
@@ -178,20 +165,20 @@ export default {
 
       this.$refs.comment.tableScroll()
       this.isShow.comment = !this.isShow.comment
-      store.commit('loading/setIsLoading', false)
+      this.setIsLoading(false)
     },
     closeReply(){
       this.isShow.comment = !this.isShow.comment
     },
-    showNameDialog(){
-      this.dialog.title = "notice"
+    showNameDialog() {
+      this.dialog.title = 'notice'
       this.dialog.content = `
       <p>お名前の設定は1度だけ可能です。<br>
-      【${this.user_name}】でよろしいですか?
+      【${this.userName}】でよろしいですか?
       </p>`
       this.dialog.button.positive.isShow = true
       this.dialog.button.positive.func = () => {
-        this.setUserName(this.user_name)
+        this.setUserName(this.userName)
       }
       this.dialog.button.negative.isShow = true
       this.dialog.button.negative.func = () => {
@@ -199,34 +186,65 @@ export default {
       }
       this.dialog.isShow = true
     },
-    async getUserData(){
-      const user = await firebase.auth().signInAnonymously()
-      return user
-    }
+    setTab(index) {
+      this.selected = index
+      this.isShow.comment = false
+      this.$refs.comment.closeListener()
+    },
+    ...mapMutations('loading', [
+      'setIsLoading',
+      'setStatusMsg'
+    ]),
+    ...mapMutations('auth', [
+      'setUserInfo'
+    ]),
+    ...mapActions('auth', [
+      'getUserAnonymously',
+      'updateUserName'
+    ])
   },
-  async mounted(){
-    let userData = await this.getUserData()
-    store.commit('auth/onAuthStateChanged', userData.user);
-    store.commit('auth/onUserStatusChanged', userData.user.uid ? true : false);
-    let userRef = firebase.firestore().collection("users").doc(userData.user.uid)
-    const _this = this
+  async mounted() {
+    await this.getUserAnonymously()
+
+    const userRef = USER_REF().doc(this.user.uid)
     await userRef.get().then(function(doc) {
       if(doc.exists) {
         userRef.update({
-          updated_at: firebase.firestore.FieldValue.serverTimestamp()
+          updated_at: CURRENT_TIME()
         })
-        store.commit('auth/setUserInfo', doc.data());
-        _this.isLoaded = true
+        this.setUserInfo(doc.data())
+        this.isLoaded = true
       }else{
         // 認証情報が取れていなければ初期化ページに飛ばす
-        _this.$router.push('/')
+        this.$router.push('/')
       }
-    })
+    }.bind(this))
   },
   computed: {
+    TAB_TYPE() {
+      return {
+        BUY: 1,
+        SELL: 2,
+        LIST: 3,
+        TALK: 4,
+        MY_PAGE: 5
+      }
+    },
+    TABS() {
+      return {
+        [this.TAB_TYPE.BUY]: '求める',
+        [this.TAB_TYPE.SELL]: '出品する',
+        [this.TAB_TYPE.LIST]: '取引一覧',
+        [this.TAB_TYPE.TALK]: '雑談',
+        [this.TAB_TYPE.MY_PAGE]: 'お気に入り'
+      }
+    },
     ...mapGetters({
       isLoading: 'loading/isLoading'
     }),
+    ...mapGetters('auth', [
+      'user'
+    ])
   },
   watch: {
   },
@@ -270,6 +288,7 @@ export default {
 }
 .content-choco{
   position: relative;
-  height: 100%;
+  // height: 100%;
+  height: calc(100% - 30px - 46px - 54px - 19px);
 }
 </style>

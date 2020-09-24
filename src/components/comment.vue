@@ -1,5 +1,5 @@
 <template>
-  <div class="h100p">
+  <div class="page-parent">
     <div class="comment table-choco" ref="comment_table">
       <table class="item-table-choco back-choco body-2" cellspacing="0">
         <tr>
@@ -30,7 +30,7 @@
         <li v-for="(content,index) in reply" :key="index" class="onebox" :class="{'owner': content.uid == uid, 'myself': content.uid == user.uid,'member': content.uid != user.uid}">
           <div class="fukiArea">
             <v-avatar color="" size="30" v-if="content.uid == user.uid">
-               <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,true)">
+                <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,true)">
             </v-avatar>
             <v-avatar size="30" v-else>
               <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,false)">

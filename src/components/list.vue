@@ -33,7 +33,7 @@
         </tbody>
       </table>
     </div>
-    <v-row justify="center">
+    <v-row justify="center" class="pa-0">
       <v-dialog
         v-model="dialog.isShow"
         max-width="290"
@@ -171,7 +171,7 @@ export default {
     padding-bottom: 0;
     table{
       border: 1px solid $base_color_2;
-      border-radius: 7px;
+      border-radius: 7px 7px 0 0;
     }
   }
   .item-th-choco{

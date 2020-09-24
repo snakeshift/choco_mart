@@ -81,8 +81,7 @@
     border-radius: 6px;
     overflow: auto;
     overflow-x: hidden;
-    height: calc(100% - 30px - 46px - 54px - 19px);
-  
+    height: 100%;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -106,6 +105,7 @@
   .item-table-choco{
     table-layout: fixed;
     width: 100%;
+    // overflow: hidden;
     tbody{
       tr{
         &:first-of-type{
@@ -213,27 +213,46 @@
       background-color: $base_color_4 !important;
     }
   }
+  .page-parent {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+  }
   .panel-choco{
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    position: absolute;
+    pointer-events: none;
+    padding: 0 !important;
     .good{
       position: absolute;
       right: 15px;
       top: 8px;
       display: flex;
       align-items: center;
+      pointer-events: auto;
     }
     .write{
       position: absolute;
       width: 47px;
       height: 47px;
       right: 5px;
-      top: calc(100% - 30px - 46px - 54px - 75px);
+      bottom: 15px;
+      pointer-events: auto;
+      // top: calc(100% - 30px - 46px - 54px - 75px);
     }
     .back{
       position: absolute;
       width: 47px;
       height: 47px;
       left: 5px;
-      top: calc(100% - 30px - 46px - 54px - 75px);
+      bottom: 15px;
+      pointer-events: auto;
+      // top: calc(100% - 30px - 46px - 54px - 75px);
     }
   }
   .pager{
@@ -242,6 +261,7 @@
     padding-left: 12px;
     padding-right: 12px;
     padding-bottom: 12px;
+    padding-top: 8px;
     &_li{
       cursor: pointer;
       .v-icon{

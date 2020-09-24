@@ -1,118 +1,120 @@
 <template>
-  <div class="table-choco talk" ref="talk_table">
-    <div>
-      <table class="item-table-choco back-choco" cellspacing="0">
-        <thead>
-          <tr class="item-th-choco text-choco body-2">
-            <th>タイトル名</th>
-            <th>投稿者</th>
-            <th>返</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'talks')">
-            <td>
-              <div class="item-input-choco">
-                <v-chip dark :color="TALK_TYPE_COLOR[item.type]" x-small class="chip">{{TALK_TYPE[item.type]}}</v-chip>
-                <span type="text" class="text-choco-dark pl-12 text-truncate">
-                  {{item.title}}                
-                </span>
-              </div>
-            </td>
-            <td>
-              <div class="item-input-choco">
-                <span class="text-choco-dark text-truncate">{{item.name}}</span>
-              </div>
-            </td>
-            <td>
-              <div class="item-input-choco">
-                <span class="text-choco-dark link pointer text-truncate">{{item.reply}}</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="page-parent">
+    <div class="table-choco talk" ref="talk_table">
+      <div>
+        <table class="item-table-choco back-choco" cellspacing="0">
+          <thead>
+            <tr class="item-th-choco text-choco body-2">
+              <th>タイトル名</th>
+              <th>投稿者</th>
+              <th>返</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'talks')">
+              <td>
+                <div class="item-input-choco">
+                  <v-chip dark :color="TALK_TYPE_COLOR[item.type]" x-small class="chip">{{TALK_TYPE[item.type]}}</v-chip>
+                  <span type="text" class="text-choco-dark pl-12 text-truncate">
+                    {{item.title}}                
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="item-input-choco">
+                  <span class="text-choco-dark text-truncate">{{item.name}}</span>
+                </div>
+              </td>
+              <td>
+                <div class="item-input-choco">
+                  <span class="text-choco-dark link pointer text-truncate">{{item.reply}}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <v-row justify="center" class="pa-0">
+        <v-dialog
+          v-model="dialog.isShow"
+          max-width="290"
+        >
+          <div class="modal-choco">
+            <div class="head text-choco pl-2 body-2">
+              {{dialog.title}}
+            </div>
+            <div class="body text-choco-dark pa-2">
+              <p v-html="dialog.content"></p>
+            </div>
+            <div class="footer">
+              <button v-if="dialog.button.positive.isShow" @click="dialog.button.positive.func()">OK</button>
+              <button v-if="dialog.button.negative.isShow" @click="dialog.button.negative.func()">キャンセル</button>
+            </div>
+          </div>
+        </v-dialog>
+      </v-row>
+      <ul class="pager">
+        <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
+          <template v-if="pageSetting.index == n">
+            <v-icon color="primary">mdi-numeric-{{n}}-box</v-icon>
+          </template>
+          <template v-else>
+            <v-icon>mdi-numeric-{{n}}-box</v-icon>
+          </template>
+        </li>
+      </ul>
+      <v-row justify="center" class="pa-0">
+        <v-dialog
+          v-model="chat.isShow"
+          max-width="500"
+          width="90%"
+        >
+          <div class="modal-choco" style="height: 445px;">
+            <div class="head text-choco pl-2 body-2">スレッド作成</div>
+            <div class="body text-choco-dark pa-2 mt-3 modal-textarea-choco">
+              <v-row>
+                <v-col cols="5" class="pt-0 pb-0">
+                  <v-select
+                    v-model="chat.selectedType"
+                    :items="types"
+                    item-text="text"
+                    item-value="value"
+                    label="種別"
+                    outlined
+                    class="mb-4"
+                    hide-details
+                  ></v-select>
+                </v-col>
+              </v-row>
+              <v-text-field
+                label="タイトル.."
+                v-model="chat.title"
+                outlined
+                class="mb-4 text-choco-dark body"
+                hide-details
+              ></v-text-field>
+              <v-textarea
+                outlined
+                label="内容.."
+                v-model="chat.content"
+                no-resize
+                height="180px"
+                class="text-choco-dark body"
+                hide-details
+              ></v-textarea>
+            </div>
+            <div class="footer">
+              <v-btn color="#487DF6" class="button-choco" :class="{'pointer-none': chat.isClicked}" dark @click="sendChat()">
+                <span>作成</span>
+              </v-btn>
+              <v-btn color="#487DF6" class="button-choco" dark @click="chat.isShow = false">
+                <span>閉じる</span>
+              </v-btn>
+            </div>
+          </div>
+        </v-dialog>
+      </v-row>
     </div>
-    <v-row justify="center">
-      <v-dialog
-        v-model="dialog.isShow"
-        max-width="290"
-      >
-        <div class="modal-choco">
-          <div class="head text-choco pl-2 body-2">
-            {{dialog.title}}
-          </div>
-          <div class="body text-choco-dark pa-2">
-            <p v-html="dialog.content"></p>
-          </div>
-          <div class="footer">
-            <button v-if="dialog.button.positive.isShow" @click="dialog.button.positive.func()">OK</button>
-            <button v-if="dialog.button.negative.isShow" @click="dialog.button.negative.func()">キャンセル</button>
-          </div>
-        </div>
-      </v-dialog>
-    </v-row>
-    <ul class="pager">
-      <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
-        <template v-if="pageSetting.index == n">
-          <v-icon color="primary">mdi-numeric-{{n}}-box</v-icon>
-        </template>
-        <template v-else>
-          <v-icon>mdi-numeric-{{n}}-box</v-icon>
-        </template>
-      </li>
-    </ul>
-    <v-row justify="center">
-      <v-dialog
-        v-model="chat.isShow"
-        max-width="500"
-        width="90%"
-      >
-        <div class="modal-choco" style="height: 445px;">
-          <div class="head text-choco pl-2 body-2">スレッド作成</div>
-          <div class="body text-choco-dark pa-2 mt-3 modal-textarea-choco">
-            <v-row>
-              <v-col cols="5" class="pt-0 pb-0">
-                <v-select
-                  v-model="chat.selectedType"
-                  :items="types"
-                  item-text="text"
-                  item-value="value"
-                  label="種別"
-                  outlined
-                  class="mb-4"
-                  hide-details
-                ></v-select>
-              </v-col>
-            </v-row>
-            <v-text-field
-              label="タイトル.."
-              v-model="chat.title"
-              outlined
-              class="mb-4 text-choco-dark body"
-              hide-details
-            ></v-text-field>
-            <v-textarea
-              outlined
-              label="内容.."
-              v-model="chat.content"
-              no-resize
-              height="180px"
-              class="text-choco-dark body"
-              hide-details
-            ></v-textarea>
-          </div>
-          <div class="footer">
-            <v-btn color="#487DF6" class="button-choco" :class="{'pointer-none': chat.isClicked}" dark @click="sendChat()">
-              <span>作成</span>
-            </v-btn>
-            <v-btn color="#487DF6" class="button-choco" dark @click="chat.isShow = false">
-              <span>閉じる</span>
-            </v-btn>
-          </div>
-        </div>
-      </v-dialog>
-    </v-row>
     <div class="panel-choco">
       <v-btn class="mx-2 write" fab dark small color="#1E2E58" @click="chat.isShow = true">
         <v-icon dark>mdi-pencil</v-icon>
@@ -289,7 +291,7 @@ export default {
     padding-bottom: 0;
     table{
       border: 1px solid $base_color_2;
-      border-radius: 7px;
+      border-radius: 7px 7px 0 0;
     }
   }
   .item-th-choco{

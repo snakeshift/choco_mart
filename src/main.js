@@ -7,24 +7,21 @@ import vuetify from './plugins/vuetify'
 import './plugins/firebase'
 
 import { firestorePlugin } from 'vuefire'  
-import firebaseConfig from './plugins/firebase';
+import firebaseConfig from './plugins/firebase'
 import 'firebase/firestore'
 
 import firebase from 'firebase'
 
 import mixin from './mixins/index'
 
-import smoothscroll from 'smoothscroll-polyfill';
+import smoothscroll from 'smoothscroll-polyfill'
  
 // kick off the polyfill!
-smoothscroll.polyfill();
+smoothscroll.polyfill()
 
 Vue.use(firestorePlugin)
 
 Vue.store = store
-
-// Initialize Firebase
-firebaseConfig.init()
 
 // バーション情報確認
 // let version = window.localStorage.getItem("version"); 
@@ -41,13 +38,18 @@ firebaseConfig.init()
 //   }
 // }
 
-Vue.mixin(mixin);
+Vue.mixin(mixin)
 
 Vue.config.productionTip = false
 
-async function getUserData(){
+const getUserData = async () => {
   const user = await firebase.auth().signInAnonymously()
   return user
+}
+
+// Initialize Firebase
+const firebaseInit = async () => {
+  await firebaseConfig.init()
 }
 
 // homeへ移動した後に、ユーザ情報が取れなければInitへ飛ばす
@@ -80,9 +82,15 @@ async function getUserData(){
   // })
 // })
 // firebase.auth().signOut();
-new Vue({
-  router,
-  store,
-  vuetify,
-  render: h => h(App)
-}).$mount('#app')
+
+const init = async () => {
+  await firebaseInit()
+  new Vue({
+    router,
+    store,
+    vuetify,
+    render: h => h(App)
+  }).$mount('#app')
+}
+
+init()
