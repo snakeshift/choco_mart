@@ -63,10 +63,10 @@
               ></v-textarea>
             </div>
             <div class="footer">
-              <v-btn color="#487DF6" class="button-choco" :class="{'pointer-none': chat.isClicked}" dark @click="sendChat()">
+              <v-btn color="primary" class="button-choco" :class="{'pointer-none': chat.isClicked}" dark @click="sendChat()">
                 <span>書き込む</span>
               </v-btn>
-              <v-btn color="#487DF6" class="button-choco" dark @click="chat.isShow = false">
+              <v-btn color="primary" class="button-choco" dark @click="chat.isShow = false">
                 <span>閉じる</span>
               </v-btn>
             </div>

@@ -74,7 +74,7 @@
         </v-row>
         <v-row>
           <v-col class="d-flex justify-center">
-            <v-btn color="#487DF6" class="button-choco text-choco" dark @click="overlay = false">
+            <v-btn color="primary" class="button-choco text-choco" dark @click="overlay = false">
               <span>閉じる</span>
             </v-btn>
           </v-col>

@@ -29,7 +29,7 @@
         <div class="tab-choco">
           <table class="item-tab-choco back-choco pa-2 pl-1" cellspacing="5">
             <tr class="item-th-choco text-choco body-2">
-              <th v-for="(content, index) in TABS" :key="index" @click="setTab(index)" :class="{'isChecked': index == selected}">
+              <th v-for="(content, index) in TYPE_TEXT" :key="index" @click="setTab(index)" :class="{'isChecked': index == selected}">
                 {{content}}
               </th>
             </tr>
@@ -37,20 +37,20 @@
         </div>
         <div class="mx-2 content-choco">
           <transition name="slide-left">
-            <buy v-if="isLoaded" v-show="selected == TAB_TYPE.BUY && !isShow.comment" @showReply = showReply></buy>
+            <buy v-if="isLoaded" v-show="selected == TYPE.BUY && !isShow.comment" @showReply = showReply></buy>
           </transition>
           <transition name="slide-left">
-            <sell v-if="isLoaded" v-show="selected == TAB_TYPE.SELL && !isShow.comment" @showReply = showReply></sell>
+            <sell v-if="isLoaded" v-show="selected == TYPE.SELL && !isShow.comment" @showReply = showReply></sell>
           </transition>
           <transition name="slide-left">
-            <list v-if="isLoaded" v-show="selected == TAB_TYPE.LIST && !isShow.comment" @showReply = showReply></list>
+            <list v-if="isLoaded" v-show="selected == TYPE.LIST && !isShow.comment" @showReply = showReply></list>
           </transition>
-          <transition name="slide-left">
-            <talk v-if="isLoaded" v-show="selected == TAB_TYPE.TALK && !isShow.comment" @showReply = showReply></talk>
-          </transition>
-          <transition name="slide-left">
-            <mypage v-if="isLoaded" v-show="selected == TAB_TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
-          </transition>
+          <!-- <transition name="slide-left">
+            <talk v-if="isLoaded" v-show="selected == TYPE.TALK && !isShow.comment" @showReply = showReply></talk>
+          </transition> -->
+          <!-- <transition name="slide-left">
+            <mypage v-if="isLoaded" v-show="selected == TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
+          </transition> -->
           <transition name="slide-left">
             <comment v-if="isLoaded" v-show="isShow.comment" ref="comment" @closeReply = closeReply></comment>
           </transition>
@@ -70,10 +70,10 @@
             <p v-html="dialog.content"></p>
           </div>
           <div class="footer">
-            <v-btn v-if="dialog.button.positive.isShow" color="#487DF6" class="button-choco" :class="{'pointer-none': dialog.button.positive.isClicked}" dark @click="dialog.button.positive.func()">
+            <v-btn v-if="dialog.button.positive.isShow" color="primary" class="button-choco" :class="{'pointer-none': dialog.button.positive.isClicked}" dark @click="dialog.button.positive.func()">
               <span>OK</span>
             </v-btn>
-            <v-btn v-if="dialog.button.negative.isShow" color="#487DF6" class="button-choco" dark @click="dialog.button.negative.func()">
+            <v-btn v-if="dialog.button.negative.isShow" color="primary" class="button-choco" dark @click="dialog.button.negative.func()">
               <span>キャンセル</span>
             </v-btn>
           </div>
@@ -91,6 +91,7 @@ import firebase from 'firebase'
 import store from '@/store'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME } from '@/config/firebase/util'
+import { TYPE, TYPE_TEXT } from '@/config/library'
 
 import buy from '@/components/buy.vue'
 import sell from '@/components/sell.vue'
@@ -106,8 +107,8 @@ export default {
     buy,
     sell,
     list,
-    talk,
-    mypage,
+    // talk,
+    // mypage,
     comment,
     loading
   },
@@ -221,24 +222,8 @@ export default {
     }.bind(this))
   },
   computed: {
-    TAB_TYPE() {
-      return {
-        BUY: 1,
-        SELL: 2,
-        LIST: 3,
-        TALK: 4,
-        MY_PAGE: 5
-      }
-    },
-    TABS() {
-      return {
-        [this.TAB_TYPE.BUY]: '求める',
-        [this.TAB_TYPE.SELL]: '出品する',
-        [this.TAB_TYPE.LIST]: '取引一覧',
-        [this.TAB_TYPE.TALK]: '雑談',
-        [this.TAB_TYPE.MY_PAGE]: 'お気に入り'
-      }
-    },
+    TYPE: () => TYPE,
+    TYPE_TEXT: () => TYPE_TEXT,
     ...mapGetters({
       isLoading: 'loading/isLoading'
     }),

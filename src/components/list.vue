@@ -13,7 +13,12 @@
           <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'lists')">
             <td>
               <div class="item-input-choco">
-                <v-chip dark :color="(item.status == 3) ? '' : TYPE_COLOR[item.type]" x-small class="chip">{{(item.status == 3) ? "終" : TYPE[item.type]}}</v-chip>
+                <v-chip
+                  dark
+                  :color="(item.status === STATUS.FINISH) ? '' : TYPE_COLOR[item.type]"
+                  x-small
+                  class="chip">{{(item.status === STATUS.FINISH) ? TYPE_TEXT_SHORT[item.status] : TYPE_TEXT_SHORT[item.type]}}
+                </v-chip>
                 <span type="text" class="text-choco-dark pl-12 text-truncate">
                   {{ item.name }}                 
                 </span>
@@ -68,7 +73,9 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
-import store from '@/store'
+import { TYPE, TYPE_TEXT, TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT } from '@/config/library'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
+import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
 export default {
   data () {
@@ -80,20 +87,15 @@ export default {
         button: {
           positive: {
             isShow: false,
-            func(){
-
-            }
+            func(){}
           },
           negative: {
             isShow: false,
-            func(){
-
-            }
+            func(){}
           }
         },
       },
       count: 0,
-      items: {},
       pageSetting: {
         index: 1,
         interval: 21
@@ -101,65 +103,43 @@ export default {
     }
   },
   methods: {
-    async refresh(){
-      let t =this
-      let listRef = t.db.collection("lists")
-      await listRef.orderBy("updated_at", "desc").limit(200).get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          t.$set(t.items, doc.id, doc.data())
-        });
-      });
-    },
-    async init(){
-      let t = this
-      let listRef = t.db.collection("lists")
-      await listRef.orderBy("updated_at", "desc").limit(1).onSnapshot(function (querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          t.$set(t.items, doc.id, doc.data())
-        });
-      })
-    },
     changePage(index){
       this.pageSetting.index = index
-      this.scrollTo(this.$refs.list_table,"top",100)
-    }
+      this.scrollTo(this.$refs.list_table,'top',100)
+    },
+    ...mapActions('firebase', ['getList']),
   },
   computed: {
+    TYPE: () => TYPE,
+    TYPE_COLOR: () => TYPE_COLOR,
+    STATUS: () => STATUS,
+    STATUS_TEXT: () => STATUS_TEXT,
+    TYPE_TEXT_SHORT: () => TYPE_TEXT_SHORT,
     ...mapGetters({
       user: 'auth/user',
+      items: 'firebase/list'
     }),
     sortedItems() {
-      let sorted = {};
-      let array = [];
-      let t = this
-
-      for (let key in t.items) { array.push(key);}
+      const sortedItems = {}
+      const array = []
+      for (const key in this.items) { array.push(key)}
       array.sort(function(a,b){
-        if(t.items[a].updated_at && t.items[b].updated_at) {
-          return (t.items[a].updated_at.seconds < t.items[b].updated_at.seconds) ? 1 : -1
+        if(this.items[a].updated_at && this.items[b].updated_at) {
+          return (this.items[a].updated_at.seconds < this.items[b].updated_at.seconds) ? 1 : -1
         }
-      });
+      }.bind(this))
 
-      // 現在のページindexから、何件分のアイテムを表示するか決定
-      let itemCount = array.length
-      let start = this.pageSetting.index * this.pageSetting.interval - this.pageSetting.interval
-      let end = this.pageSetting.index * this.pageSetting.interval - 1
-      if(itemCount < end){
-        end = itemCount
+      for (const item of array) {
+        sortedItems[item] = this.items[item]
       }
-
-      for (let i = start; i < end; i++) {
-        sorted[array[i]] = t.items[array[i]];
-      }
-      return sorted
+      return sortedItems
     },
     getPageIndex(){
       return Math.ceil(Object.keys(this.items).length/this.pageSetting.interval)
     }
   },
   mounted(){
-    this.refresh()
-    this.init()
+    this.getList({limit: 200})
   }
 }
 </script>
