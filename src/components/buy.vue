@@ -75,7 +75,15 @@
             <p v-html="dialog.content"></p>
           </div>
           <div class="footer">
-            <v-btn v-if="dialog.button.positive.isShow" color="primary" class="button-choco" :class="{'pointer-none': dialog.button.positive.isClicked}" dark @click="dialog.button.positive.func()">
+            <v-btn
+              v-if="dialog.button.positive.isShow"
+              color="primary"
+              class="button-choco"
+              :class="{'pointer-none': dialog.button.positive.isClicked}"
+              dark
+              @click="dialog.button.positive.func()"
+              :loading="dialog.button.loading"
+            >
               <span>OK</span>
             </v-btn>
             <v-btn v-if="dialog.button.negative.isShow" color="primary" class="button-choco" dark @click="dialog.button.negative.func()">
@@ -103,6 +111,7 @@ export default {
         title: '',
         content: '',
         button: {
+          loading: false,
           positive: {
             isShow: false,
             isClicked: false,
@@ -139,10 +148,12 @@ export default {
             this.dialog.button.negative.isShow = true
 
             this.dialog.button.positive.func = async () => {
+              this.dialog.button.loading = true
               this.dialog.button.positive.isClicked = true
               await this.registerBuyList({item, index})
               this.dialog.isShow = false
               this.dialog.button.positive.isClicked = false
+              this.dialog.button.loading = false
             }
             this.dialog.button.negative.func = () => {
               this.dialog.isShow = false
@@ -161,10 +172,12 @@ export default {
           this.dialog.button.negative.isShow = true
 
           this.dialog.button.positive.func = async () => {
+            this.dialog.button.loading = true
             this.dialog.button.positive.isClicked = true
             await this.closeBuyList({item, index})
             this.dialog.isShow = false
             this.dialog.button.positive.isClicked = false
+            this.dialog.button.loading = false
           }
           this.dialog.button.negative.func = () => {
             this.dialog.isShow = false
@@ -179,7 +192,7 @@ export default {
       }
     },
     changePrice(item,index){
-      this.dialog.title = "notice"
+      this.dialog.title = 'notice'
       this.dialog.content = `
         <p>変更後の価格を入力してください。</p>
         <div class="item-input-choco">
@@ -191,10 +204,12 @@ export default {
       this.dialog.button.positive.func = async () => {
         const newPrice = document.getElementById('newPrice').value
         if(newPrice !== item.price){
+          this.dialog.button.loading = true
           this.dialog.button.positive.isClicked = true
           await this.setBuyListPrice({item,index,newPrice})
           this.dialog.isShow = false
           this.dialog.button.positive.isClicked = false
+          this.dialog.button.loading = false
         }else{
           return
         }

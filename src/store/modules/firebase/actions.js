@@ -1,5 +1,5 @@
 import firebase from 'firebase'
-import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF, COUNT_REF } from '@/config/firebase/ref'
 import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT } from '@/config/library'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
@@ -418,14 +418,28 @@ export default {
 
   // リスト取得
   async getList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const {limit, offset} = {...payload}
-    await LIST_REF().orderBy('updated_at', 'desc').limit(limit).get().then(function(querySnapshot) {
+    const {limit, lastUpdatedAt} = {...payload}
+    const query = !lastUpdatedAt
+      ? LIST_REF().orderBy('updated_at', 'desc').limit(limit)
+      : LIST_REF().orderBy('updated_at', 'desc').startAt(lastUpdatedAt).limit(limit)
+    await query.get().then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
         const id = doc.id
         const item = doc.data()
         commit('setList', { id, item })
       })
-      dispatch('setListListener')
+    })
+  },
+  async getListBySearch ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {title, limit} = {...payload}
+    const query = LIST_REF().orderBy('name').orderBy('updated_at', 'desc').startAt(title).endAt(title+'\uf8ff').limit(limit)
+    await query.get().then(function(querySnapshot) {
+      commit('resetListBySearch')
+      querySnapshot.forEach(function(doc) {
+        const id = doc.id
+        const item = doc.data()
+        commit('setListBySearch', { id, item })
+      })
     })
   },
   // 最新の1件をリアルタイム監視登録
@@ -438,7 +452,13 @@ export default {
       })
     })
   },
-
+  // 最新の1件をリアルタイム監視登録
+  async setListCountListener ({ dispatch, commit, getters, rootGetters }, payload) {
+    COUNT_REF().doc('lists').onSnapshot(function (doc) {
+      const count = doc.data()
+      commit('setCount', { type: 'lists', count: count.num })
+    })
+  },
   async RefreshCommentList ({ dispatch, commit, getters, rootGetters }, payload) {
     const commentRef = COMMENT_REF().doc(payload.itemId)
     return await commentRef.get().then(function(doc) {

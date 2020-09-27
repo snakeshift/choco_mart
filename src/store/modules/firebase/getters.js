@@ -7,5 +7,11 @@ export default {
   },
   list: state => {
     return state.lists
-  }
+  },
+  searchList: state => {
+    return state.searches
+  },
+  count: state => {
+    return state.counts
+  },
 }
