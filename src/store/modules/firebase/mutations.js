@@ -16,6 +16,24 @@ export default {
   resetListBySearch(state, payload) {
     state.searches = {}
   },
+  setTalkList(state, payload) {
+    Vue.set(state.talks, payload.id, payload.item)
+  },
+  setCommentList(state, payload) {
+    state.comments = payload.item
+  },
+  resetCommentList(state, payload) {
+    state.comments = {}
+  },
+  setNoticeList(state, payload) {
+    Vue.set(state.notices, payload.id, payload.item)
+  },
+  setTalkMemberList(state, payload) {
+    Vue.set(state.talkMembers, payload.id, payload.userData)
+  },
+  resetTalkMemberList(state, payload) {
+    state.talkMembers = {}
+  },
   setCount(state, payload) {
     state.counts[payload.type] = payload.count
   }

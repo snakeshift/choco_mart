@@ -11,7 +11,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'lists')">
+            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, COMMENT_TYPE.LIST)">
               <td>
                 <div class="item-input-choco">
                   <v-chip
@@ -42,7 +42,7 @@
       <v-row justify="center" class="pa-0">
         <v-dialog
           v-model="search.isShow"
-          max-width="500"
+          max-width="300"
           width="90%"
         >
           <div class="modal-choco" style="height: 200px;">
@@ -87,7 +87,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
-import { TYPE, TYPE_TEXT, TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT } from '@/config/library'
+import { TYPE, TYPE_TEXT, TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT, COMMENT_TYPE } from '@/config/library'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
@@ -122,7 +122,6 @@ export default {
   methods: {
     checkScroll() {
       const listTable = this.$refs.list_table
-      const contentTable = this.$refs.content_table
       listTable.addEventListener('scroll', async function () {
         if (!this.isLoading && !this.search.isSearched) {
           const clientHeight = listTable.clientHeight
@@ -172,6 +171,7 @@ export default {
     STATUS: () => STATUS,
     STATUS_TEXT: () => STATUS_TEXT,
     TYPE_TEXT_SHORT: () => TYPE_TEXT_SHORT,
+    COMMENT_TYPE: () => COMMENT_TYPE,
     ...mapGetters({
       user: 'auth/user',
       items: 'firebase/list',

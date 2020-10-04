@@ -45,9 +45,9 @@
           <transition name="slide-left">
             <list v-if="isLoaded" v-show="selected == TYPE.LIST && !isShow.comment" @showReply = showReply></list>
           </transition>
-          <!-- <transition name="slide-left">
+          <transition name="slide-left">
             <talk v-if="isLoaded" v-show="selected == TYPE.TALK && !isShow.comment" @showReply = showReply></talk>
-          </transition> -->
+          </transition>
           <!-- <transition name="slide-left">
             <mypage v-if="isLoaded" v-show="selected == TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
           </transition> -->
@@ -107,7 +107,7 @@ export default {
     buy,
     sell,
     list,
-    // talk,
+    talk,
     // mypage,
     comment,
     loading
@@ -115,7 +115,7 @@ export default {
   data () {
     return {
       isLoaded: false,
-      selected: 1,
+      selected: TYPE.BUY,
       userName: '',
       isSetUserName: false,
       isShow: {
@@ -174,9 +174,10 @@ export default {
     showNameDialog() {
       this.dialog.title = 'notice'
       this.dialog.content = `
-      <p>お名前の設定は1度だけ可能です。<br>
-      【${this.userName}】でよろしいですか?
-      </p>`
+        <p>お名前の設定は1度だけ可能です。<br>
+        【${this.userName}】でよろしいですか?
+        </p>
+      `
       this.dialog.button.positive.isShow = true
       this.dialog.button.positive.func = () => {
         this.setUserName(this.userName)

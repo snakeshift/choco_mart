@@ -3,10 +3,12 @@ export default {
   sells: {},
   lists: {},
   searches: {},
-  talks: [],
-  notices: [],
-  comments: [],
+  talks: {},
+  notices: {},
+  comments: {},
+  talkMembers: {},
   counts: {
-    lists: 0
+    lists: 0,
+    talks: 0
   }
 }

@@ -6,6 +6,7 @@ const BUY_REF = () => firebase.firestore().collection('buys')
 const NOTICE_REF = () => firebase.firestore().collection('notices')
 const COMMENT_REF = () => firebase.firestore().collection('comments')
 const LIST_REF = () => firebase.firestore().collection('lists')
+const TALK_REF = () => firebase.firestore().collection('talks')
 const COUNT_REF = () => firebase.firestore().collection('counts')
 
 export {
@@ -15,5 +16,6 @@ export {
   NOTICE_REF,
   COMMENT_REF,
   LIST_REF,
+  TALK_REF,
   COUNT_REF
 }

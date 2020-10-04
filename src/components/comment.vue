@@ -4,16 +4,15 @@
       <table class="item-table-choco back-choco body-2" cellspacing="0">
         <tr>
           <th class="item-th-choco text-choco body-2">
-            <template v-if="kind == 'lists'">装備名</template>
-            <template v-else-if="kind == 'talks'">タイトル</template>
+            <template v-if="kind === COMMENT_TYPE.LIST">装備名</template>
+            <template v-else-if="kind === COMMENT_TYPE.TALK">タイトル</template>
           </th>
           <td class="item-td-choco text-choco-dark">{{name}}</td>
         </tr>
         <tr v-if="price">
           <th class="item-th-choco text-choco body-2">
-            <span v-if="type == 1">買い価格</span>
-            <span v-else-if="type == 2">売り価格</span>
-            <span v-else>価格</span>
+            <span v-if="type === TYPE.BUY">買い価格</span>
+            <span v-else-if="type === TYPE.SELL">売り価格</span>
           </th>
           <td class="item-td-choco text-choco-dark">{{price}}</td>
         </tr>
@@ -23,7 +22,7 @@
         </tr>
         <tr>
           <th class="item-th-choco text-choco body-2">作成日</th>
-          <td class="item-td-choco text-choco-dark">{{created_at}}</td>
+          <td class="item-td-choco text-choco-dark">{{getFormatedDate(created_at)}}</td>
         </tr>
       </table>
       <ul class="chat-choco oneArea">
@@ -63,7 +62,7 @@
               ></v-textarea>
             </div>
             <div class="footer">
-              <v-btn color="primary" class="button-choco" :class="{'pointer-none': chat.isClicked}" dark @click="sendChat()">
+              <v-btn color="primary" class="button-choco" :loading="chat.loading" dark @click="sendChat()">
                 <span>書き込む</span>
               </v-btn>
               <v-btn color="primary" class="button-choco" dark @click="chat.isShow = false">
@@ -77,12 +76,12 @@
     <div class="panel-choco">
       <div class="good mx-2">
         <template v-if="isGood">
-          <v-btn text icon color="pink" @click="removeGood()">
+          <v-btn text icon color="pink" @click="minusGood()">
             <v-icon>mdi-thumb-up</v-icon>
           </v-btn>
         </template>
         <template v-else>
-          <v-btn text icon color="red lighten-2" @click="sendGood()">
+          <v-btn text icon color="red lighten-2" @click="plusGood()">
             <v-icon>mdi-thumb-up</v-icon>
           </v-btn>
         </template>
@@ -100,101 +99,71 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import { TYPE, TYPE_TEXT, TALK_TYPE, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF } from '@/config/firebase/ref'
 import firebase from 'firebase'
-import firebaseConfig from '@/plugins/firebase'
 import '@/assets/scss/components/chat.scss'
 
 export default {
   data () {
     return {
-      notices: null,
-      kind: "lists",
-      itemId: "",
-      name: "",
-      price: "",
-      uid: "",
-      type: "",
+      kind: COMMENT_TYPE.LIST,
+      itemId: '',
+      name: '',
+      price: '',
+      uid: '',
+      type: TYPE.BUY,
       good: 0,
       reply: [],
-      created_at: "",
+      created_at: '',
       chat: {
-        value: "",
+        value: '',
         isShow: false,
-        isClicked: false
+        loading: false
       },
       isGood: false,
       canGood: true,
-      members: {
-      },
       listener: () => {}
     }
   },
   methods: {
+    ...mapActions('firebase', ['registerGood', 'removeGood', 'getNoticeListRef', 'registerComment', 'getCommentList', 'getTalkMemberList']),
+    ...mapMutations('firebase', ['resetTalkMemberList']),
     tableScroll() {
-      this.scrollTo(this.$refs.comment_table,"bottom",600)
+      this.scrollTo(this.$refs.comment_table, 'bottom', 600)
     },
     setKind(kind) {
       this.kind = kind
     },
     init(itemId) {
-      let t = this
-      t.listener = firebase.firestore().collection("comments").doc(itemId).onSnapshot(function (querySnapshot) {
-        t.refresh(itemId)
-      })
+      this.listener = COMMENT_REF().doc(itemId).onSnapshot(function (querySnapshot) {
+        this.refresh(itemId)
+      }.bind(this))
     },
-    closeListener() {
+    async closeListener() {
       this.listener()
+      await new Promise(r => setTimeout(r, 300)) // カクツキ防止で300ms置いてからリセット
+      this.resetTalkMemberList()
+      this.reply = []
     },
-    async sendGood(){
+    async plusGood(){
       if(!this.canGood) return
       this.canGood = false
-      let noticeRef = this.db.collection("notices").doc(this.user.uid)
-      let msgRef = this.db.collection("comments").doc(this.itemId)
-      let listRef = this.db.collection(this.kind).doc(this.itemId)
-
-      let now = firebase.firestore.FieldValue.serverTimestamp()
-
-      let msgData = {
-        updated_at: now,
-        good: firebase.firestore.FieldValue.increment(1)
-      }
-      await noticeRef.update({
-        items: firebase.firestore.FieldValue.arrayUnion(listRef)
-      })
-      await msgRef.update({
-         ...msgData 
-      })
+      await this.registerGood({kind: this.kind, itemId: this.itemId})
       await this.refreshNotice()
       this.canGood = true
     },
-    async removeGood(){
+    async minusGood(){
       if(!this.canGood) return
       this.canGood = false
-      let noticeRef = this.db.collection("notices").doc(this.user.uid)
-      let msgRef = this.db.collection("comments").doc(this.itemId)
-      let listRef = this.db.collection(this.kind).doc(this.itemId)
-
-      let now = firebase.firestore.FieldValue.serverTimestamp()
-
-      let msgData = {
-        updated_at: now,
-        good: firebase.firestore.FieldValue.increment(-1)
-      }
-      await noticeRef.update({
-        items: firebase.firestore.FieldValue.arrayRemove(listRef)
-      })
-      await msgRef.update({
-         ...msgData 
-      })
+      await this.removeGood({kind: this.kind, itemId: this.itemId})
       await this.refreshNotice()
       this.canGood = true
     },
     async refreshNotice(){
-      let noticeRef = await firebase.firestore().collection("notices").doc(this.user.uid)
-      let noticeData = await noticeRef.get()
-      this.notices = noticeData.data()
-      for(let notice of this.notices.items) {
-        if(notice.id == this.itemId){
+      const notices = await this.getNoticeListRef()
+      for(const notice of notices.items) {
+        if(notice.id === this.itemId){
           this.isGood = true
           return
         }
@@ -202,38 +171,26 @@ export default {
       this.isGood = false
     },
     async refresh(itemId){
-      let t = this
-
-      let commentData = await this.RefreshCommentList(itemId)
-      let itemRef = await firebase.firestore().collection(this.kind).doc(commentData.item.id)
-      let itemData = await itemRef.get()
-
-      for(let content of commentData.reply){
-        // 読み込み回数軽減
-        if(!this.members[content.uid]){
-          this.members[content.uid] = await this.GetUserById(content.uid)
-        }else if(content.uid == this.user.uid){
-          this.members[content.uid] = await this.GetUserById(content.uid)
-        }
-      }
+      await this.getCommentList({itemId, kind: this.kind})
+      await this.getTalkMemberList()
 
       // 更新
-      this.itemId = itemData.data().id
-      this.uid = itemData.data().uid
-      this.type = itemData.data().type
-      this.reply = commentData.reply
-      this.good = commentData.good
-      this.created_at = this.getFormatedDate(itemData.data().created_at.seconds)
+      this.itemId = this.comments.item.id
+      this.uid = this.comments.item.uid
+      this.type = this.comments.item.type
+      this.reply = this.comments.reply
+      this.good = this.comments.good
+      this.created_at = this.comments.item.created_at.seconds
       this.chat = {
         value: this.chat.value,
         isShow: this.chat.isShow,
-        isClicked: false
+        loading: false
       }
-      if(this.kind == "lists"){
-        this.name = itemData.data().name
-        this.price = itemData.data().price
-      }else if(this.kind == "talks"){
-        this.name = itemData.data().title
+      if(this.kind === COMMENT_TYPE.LIST){
+        this.name = this.comments.item.name
+        this.price = this.comments.item.price
+      }else if(this.kind === COMMENT_TYPE.TALK){
+        this.name = this.comments.item.title
         this.price = null
       }
 
@@ -244,40 +201,26 @@ export default {
     },
     async sendChat(){
       if(!this.chat.value) return
-      this.chat.isClicked = true
-      let now = firebase.firestore.FieldValue.serverTimestamp()
-      let msgRef = firebase.firestore().collection("comments").doc(this.itemId)
-      let listRef = this.db.collection(this.kind).doc(this.itemId)
-      let msgData = {
-        uid: this.user.uid,
-        msg: this.chat.value,
-        created_at: Math.floor( new Date().getTime() / 1000 )
-      }
-      let itemData = {
-        updated_at: now,
-        reply: firebase.firestore.FieldValue.increment(1)
-      }
-      await msgRef.update({
-        reply: firebase.firestore.FieldValue.arrayUnion(msgData)
-      });
-      await listRef.update({
-         ...itemData 
-      })
-      // this.refresh(this.itemId)
-      this.isShow = false
-      this.chat.value = ""
+      this.chat.loading = true
+      await this.registerComment({itemId: this.itemId, kind: this.kind, message: this.chat.value})
+      this.chat.value = ''
       this.chat.isShow = false
-      this.chat.isClicked = false
+      this.chat.loading = false
       this.tableScroll()
     },
   },
   computed: {
+    TYPE: () => TYPE,
+    TALK_TYPE: () => TALK_TYPE,
+    STATUS: () => STATUS,
+    COMMENT_TYPE: () => COMMENT_TYPE,
     ...mapGetters({
       user: 'auth/user',
+      comments: 'firebase/commentList',
+      members: 'firebase/talkMemberList',
     }),
   },
-  mounted(){
-  }
+  mounted(){}
 }
 </script>
 

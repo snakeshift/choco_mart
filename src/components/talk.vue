@@ -11,10 +11,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, 'talks')">
+            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, COMMENT_TYPE.TALK)">
               <td>
                 <div class="item-input-choco">
-                  <v-chip dark :color="TALK_TYPE_COLOR[item.type]" x-small class="chip">{{TALK_TYPE[item.type]}}</v-chip>
+                  <v-chip
+                    dark
+                    :color="TALK_TYPE_COLOR[item.type]" 
+                    x-small
+                    class="chip"
+                  >
+                    {{TALK_TYPE_TEXT_SHORT[item.type]}}
+                  </v-chip>
                   <span type="text" class="text-choco-dark pl-12 text-truncate">
                     {{item.title}}                
                   </span>
@@ -53,16 +60,6 @@
           </div>
         </v-dialog>
       </v-row>
-      <ul class="pager">
-        <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
-          <template v-if="pageSetting.index == n">
-            <v-icon color="primary">mdi-numeric-{{n}}-box</v-icon>
-          </template>
-          <template v-else>
-            <v-icon>mdi-numeric-{{n}}-box</v-icon>
-          </template>
-        </li>
-      </ul>
       <v-row justify="center" class="pa-0">
         <v-dialog
           v-model="chat.isShow"
@@ -76,9 +73,9 @@
                 <v-col cols="5" class="pt-0 pb-0">
                   <v-select
                     v-model="chat.selectedType"
-                    :items="types"
-                    item-text="text"
-                    item-value="value"
+                    :items="TALK_TYPE_SELECT"
+                    item-text="TEXT"
+                    item-value="VALUE"
                     label="種別"
                     outlined
                     class="mb-4"
@@ -104,7 +101,7 @@
               ></v-textarea>
             </div>
             <div class="footer">
-              <v-btn color="primary" class="button-choco" :class="{'pointer-none': chat.isClicked}" dark @click="sendChat()">
+              <v-btn color="primary" class="button-choco" :loading="chat.loading" dark @click="sendChat()">
                 <span>作成</span>
               </v-btn>
               <v-btn color="primary" class="button-choco" dark @click="chat.isShow = false">
@@ -126,6 +123,9 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
+import { TALK_TYPE, TALK_TYPE_SELECT, TALK_TYPE_TEXT_SHORT, TALK_TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT, COMMENT_TYPE } from '@/config/library'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
+import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
 export default {
   data () {
@@ -137,149 +137,103 @@ export default {
         button: {
           positive: {
             isShow: false,
-            func(){
-
-            }
+            func(){}
           },
           negative: {
             isShow: false,
-            func(){
-
-            }
+            func(){}
           }
         },
       },
       count: 0,
-      items: {},
-      pageSetting: {
-        index: 1,
-        interval: 21
-      },
-      types: [
-        {value: 1, text: "雑談"},
-        {value: 2, text: "代行"},
-        {value: 3, text: "募集"},
-        {value: 4, text: "その他"}
-      ],
+      limit: 20,
       chat: {
-        selectedType: 1,
-        title: "",
-        content: "",
+        selectedType: TALK_TYPE.CHAT,
+        title: '',
+        content: '',
         isShow: false,
-        isClicked: false
+        loading: false
       },
     }
   },
   methods: {
-    async refresh(){
-      let t =this
-      let talkRef = t.db.collection("talks")
-      await talkRef.orderBy("updated_at", "desc").limit(200).get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          t.$set(t.items, doc.id, doc.data())
-        });
-      });
-    },
-    async init(){
-      let t = this
-      let talkRef = t.db.collection("talks")
-      await talkRef.orderBy("updated_at", "desc").limit(1).onSnapshot(function (querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          t.$set(t.items, doc.id, doc.data())
-        });
-      })
-    },
-    changePage(index){
-      this.pageSetting.index = index
-      this.scrollTo(this.$refs.talk_table,"top",100)
+    checkScroll() {
+      const talkTable = this.$refs.talk_table
+      talkTable.addEventListener('scroll', async function () {
+        if (!this.isLoading) {
+          const clientHeight = talkTable.clientHeight
+          const scrollTop = talkTable.scrollTop
+          const scrollHeight = talkTable.scrollHeight
+          const near = 50
+          if ((clientHeight + scrollTop) >= scrollHeight - near) {
+            const keys = Object.keys(this.sortedItems)
+            const lastItem = this.sortedItems[keys[keys.length - 1]]
+            const lastUpdatedAt = lastItem.updated_at
+
+            if (keys.length >= this.counts.talks) return
+            this.setIsLoading(true)
+            this.setStatusMsg('更新中..')
+            await new Promise(r => setTimeout(r, 1000))
+            await this.getTalkList({limit: this.limit, lastUpdatedAt})
+            this.setIsLoading(false)
+          }
+        }
+      }.bind(this))
     },
     async sendChat(){
-      if(!this.chat.title || !this.chat.content) return
-      this.chat.isClicked = true
-      let now = firebase.firestore.FieldValue.serverTimestamp()
-      let today = Math.floor( new Date().getTime() / 1000 )
-
-      let itemId = this.db.collection("talks").doc().id
-
-      let talkRef = this.db.collection("talks").doc(itemId)
-      let msgRef = this.db.collection("comments").doc(itemId)
-      let name = (this.user.displayName) ? this.user.displayName : "名も無き冒険者"
-
-      // スレッドデータ
-      let itemData = {
-        id: itemId,
-        uid: this.user.uid,
-        status: 1,
-        title: this.chat.title,
-        name: name,
-        type: this.chat.selectedType,
-        reply: 1,
-        updated_at: now,
-        created_at: now
-      }
-      // コメント構造
-      let msgData = {
-        item: talkRef,
-        reply: [
-          {
-            uid: this.user.uid,
-            msg: this.chat.content,
-            created_at: today
-          }
-        ],
-        good: 0,
-        created_at: now,
-        updated_at: now
-      }
-
-      // 販売リスト更新(全体)
-      await talkRef.set({ ...itemData })
-      // スレッド作成
-      await msgRef.set({ ...msgData })
+      if (!this.chat.title || !this.chat.content) return
+      this.chat.loading = true
+      await this.registerTalkList({title: this.chat.title, content: this.chat.content, type: this.chat.selectedType})
 
       this.chat.isShow = false
-      this.chat.isClicked = false
-      this.chat.title = ""
-      this.chat.content = ""
-      this.chat.type = 1
-    }
+      this.chat.loading = false
+      this.chat.title = ''
+      this.chat.content = ''
+      this.chat.type = TALK_TYPE.CHAT
+
+      this.scrollTo(this.$refs.talk_table, 'top', 100)
+    },
+    ...mapActions('firebase', ['registerTalkList', 'getTalkList', 'setTalkListListener', 'setTalkListCountListener']),
+    ...mapMutations('loading', [
+      'setIsLoading',
+      'setStatusMsg'
+    ])
   },
   computed: {
+    TALK_TYPE: () => TALK_TYPE,
+    TALK_TYPE_COLOR: () => TALK_TYPE_COLOR,
+    TALK_TYPE_SELECT: () => TALK_TYPE_SELECT,
+    TALK_TYPE_TEXT_SHORT: () => TALK_TYPE_TEXT_SHORT,
+    STATUS: () => STATUS,
+    STATUS_TEXT: () => STATUS_TEXT,
+    COMMENT_TYPE: () => COMMENT_TYPE,
     ...mapGetters({
       user: 'auth/user',
+      items: 'firebase/talkList',
+      counts: 'firebase/count',
+      isLoading: 'loading/isLoading',
     }),
     sortedItems() {
-      let sorted = {};
-      let array = [];
-      let t = this
-
-      for (let key in t.items) { array.push(key);}
+      const sortedItems = {}
+      const array = []
+      const items = this.items
+      for (const key in items) { array.push(key)}
       array.sort(function(a,b){
-        if(t.items[a].updated_at && t.items[b].updated_at) {
-          return (t.items[a].updated_at.seconds < t.items[b].updated_at.seconds) ? 1 : -1
+        if(items[a].updated_at && items[b].updated_at) {
+          return (items[a].updated_at.seconds < items[b].updated_at.seconds) ? 1 : -1
         }
-      });
-
-      // 現在のページindexから、何件分のアイテムを表示するか決定
-      let itemCount = array.length
-      let start = this.pageSetting.index * this.pageSetting.interval - this.pageSetting.interval
-      let end = this.pageSetting.index * this.pageSetting.interval - 1
-      if(itemCount < end){
-        end = itemCount
+      }.bind(this))
+      for (const item of array) {
+        sortedItems[item] = items[item]
       }
-
-      for (let i = start; i < end; i++) {
-        sorted[array[i]] = t.items[array[i]];
-      }
-      return sorted
-    },
-    getPageIndex(){
-      return Math.ceil(Object.keys(this.items).length/this.pageSetting.interval)
+      return sortedItems
     }
   },
   mounted(){
-    this.refresh()
-    this.init()
+    this.getTalkList({limit: this.limit})
+    this.setTalkListListener()
+    this.setTalkListCountListener()
+    this.checkScroll()
   }
 }
 </script>
@@ -288,7 +242,6 @@ export default {
 .talk{
   &>div{
     padding: 9px;
-    padding-bottom: 0;
     table{
       border: 1px solid $base_color_2;
       border-radius: 7px 7px 0 0;

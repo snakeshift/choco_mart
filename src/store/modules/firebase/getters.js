@@ -11,6 +11,18 @@ export default {
   searchList: state => {
     return state.searches
   },
+  talkList: state => {
+    return state.talks
+  },
+  noticeList: state => {
+    return state.notices
+  },
+  commentList: state => {
+    return state.comments
+  },
+  talkMemberList: state => {
+    return state.talkMembers
+  },
   count: state => {
     return state.counts
   },

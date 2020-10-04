@@ -1,7 +1,7 @@
 import firebase from 'firebase'
-import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF, COUNT_REF } from '@/config/firebase/ref'
-import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT } from '@/config/library'
-import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF, COUNT_REF } from '@/config/firebase/ref'
+import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
+import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION, ARRAY_REMOVE } from '@/config/firebase/util'
 
 export default {
   // ------------------------------------- 「求める」関連の処理 -------------------------------------
@@ -452,13 +452,261 @@ export default {
       })
     })
   },
-  // 最新の1件をリアルタイム監視登録
+  // カウンター監視登録
   async setListCountListener ({ dispatch, commit, getters, rootGetters }, payload) {
     COUNT_REF().doc('lists').onSnapshot(function (doc) {
       const count = doc.data()
       commit('setCount', { type: 'lists', count: count.num })
     })
   },
+
+  // ------------------------------------- 「雑談」関連の処理 -------------------------------------
+
+  // リスト取得
+  async getTalkList ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {limit, lastUpdatedAt} = {...payload}
+    const query = !lastUpdatedAt
+      ? TALK_REF().orderBy('updated_at', 'desc').limit(limit)
+      : TALK_REF().orderBy('updated_at', 'desc').startAt(lastUpdatedAt).limit(limit)
+    await query.get().then(function(querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        const id = doc.id
+        const item = doc.data()
+        commit('setTalkList', { id, item })
+      })
+    })
+  },
+  // 最新の1件をリアルタイム監視登録
+  async setTalkListListener ({ dispatch, commit, getters, rootGetters }, payload) {
+    TALK_REF().orderBy('updated_at', 'desc').limit(1).onSnapshot(function (querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        const id = doc.id
+        const item = doc.data()
+        commit('setTalkList', { id, item })
+      })
+    })
+  },
+  // カウンター監視登録
+  async setTalkListCountListener ({ dispatch, commit, getters, rootGetters }, payload) {
+    COUNT_REF().doc('talks').onSnapshot(function (doc) {
+      const count = doc.data()
+      commit('setCount', { type: 'talks', count: count.num })
+    })
+  },
+  // 新規登録
+  async registerTalkList ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {title, content, type} = {...payload}
+
+    const itemId = TALK_REF().doc().id
+    const now = Math.floor( new Date().getTime() / 1000 )
+
+    const talkRef = TALK_REF().doc(itemId)
+    const commentRef = COMMENT_REF().doc(itemId)
+    const name = rootGetters['auth/user'].displayName ? rootGetters['auth/user'].displayName : '名も無き冒険者'
+
+    // 商品データ
+    const itemData = {
+      id: itemId,
+      uid: rootGetters['auth/user'].uid,
+      status: STATUS.UNDER_RECRUITING,
+      title,
+      name,
+      type,
+      reply: 1,
+      updated_at: CURRENT_TIME(),
+      created_at: CURRENT_TIME()
+    }
+
+    // コメント構造
+    const commentData = {
+      item: talkRef,
+      reply: [
+        {
+          uid: rootGetters['auth/user'].uid,
+          msg: content,
+          created_at: now
+        }
+      ],
+      good: 0,
+      created_at: CURRENT_TIME(),
+      updated_at: CURRENT_TIME()
+    }
+
+    // 販売リスト更新(全体)
+    await talkRef.set({ ...itemData })
+    // スレッド作成
+    await commentRef.set({ ...commentData })
+  },
+
+  // ------------------------------------- 「コメント」関連の処理 -------------------------------------
+
+  // リスト取得
+  async getCommentList ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {itemId, kind} = {...payload}
+    const commentRef = COMMENT_REF().doc(itemId)
+    await commentRef.get().then(async function(doc) {
+      const item = doc.data()
+      const talkOrListRef = kind === COMMENT_TYPE.LIST
+        ? LIST_REF().doc(itemId)
+        : TALK_REF().doc(itemId)
+      const itemData = await talkOrListRef.get()
+      item.item = itemData.data()
+      commit('setCommentList', { item })
+    })
+  },
+
+  async getTalkMemberList ({ dispatch, commit, getters, rootGetters }, payload) {
+    const reply = getters.commentList.reply
+
+    // 実データ取得
+    const getData = async (userId) => {
+      const userData = await dispatch('auth/getUserById', {userId}, { root: true })
+      return {id: userId, userData }
+    }
+
+    // 非同期まとめて格納
+    const promises = []
+    const userIds = []
+    for(const content of reply) {
+      // 同じトークを開いている限りはキャッシュ利用、それ以外は最初から取得
+      if (userIds.includes(content.uid) || content.uid in getters['talkMemberList']) continue
+      console.log(content.uid)
+      promises.push(getData(content.uid))
+      userIds.push(content.uid)
+    }
+
+    // 非同期まとめて処理
+    await Promise.all(promises).then(users => {
+      for(const user of users) {
+        commit('setTalkMemberList', { id: user.id, userData: user.userData })
+      }
+    })
+  },
+
+  async registerGood ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {itemId, kind} = {...payload}
+    const noticeRef = NOTICE_REF().doc(rootGetters['auth/user'].uid)
+    const commentRef = COMMENT_REF().doc(itemId)
+    const talkOrListRef = kind === COMMENT_TYPE.LIST
+      ? LIST_REF().doc(itemId)
+      : TALK_REF().doc(itemId)
+    
+    const commentData = {
+      updated_at: CURRENT_TIME(),
+      good: INCREMENT(1)
+    }
+    await noticeRef.update({
+      items: ARRAY_UNION(talkOrListRef)
+    })
+    await commentRef.update({
+       ...commentData 
+    })
+  },
+
+  async removeGood ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {itemId, kind} = {...payload}
+    const noticeRef = NOTICE_REF().doc(rootGetters['auth/user'].uid)
+    const commentRef = COMMENT_REF().doc(itemId)
+    const talkOrListRef = kind === COMMENT_TYPE.LIST
+      ? LIST_REF().doc(itemId)
+      : TALK_REF().doc(itemId)
+    
+    const commentData = {
+      updated_at: CURRENT_TIME(),
+      good: INCREMENT(-1)
+    }
+    await noticeRef.update({
+      items: ARRAY_REMOVE(talkOrListRef)
+    })
+    await commentRef.update({
+       ...commentData 
+    })
+  },
+
+  async registerComment({ dispatch, commit, getters, rootGetters }, payload){
+    const {itemId, kind, message} = {...payload}
+    const now = Math.floor( new Date().getTime() / 1000 )
+    const commentRef = COMMENT_REF().doc(itemId)
+    const talkOrListRef = kind === COMMENT_TYPE.LIST
+      ? LIST_REF().doc(itemId)
+      : TALK_REF().doc(itemId)
+
+    const commentData = {
+      uid: rootGetters['auth/user'].uid,
+      msg: message,
+      created_at: now
+    }
+    const itemData = {
+      updated_at: CURRENT_TIME(),
+      reply: INCREMENT(1)
+    }
+    await commentRef.update({
+      reply: ARRAY_UNION(commentData)
+    });
+    await talkOrListRef.update({
+       ...itemData 
+    })
+  },
+
+  // ------------------------------------- 「お気に入り」関連の処理 -------------------------------------
+
+  // reference取得
+  async getNoticeListRef ({ dispatch, commit, getters, rootGetters }, payload) {
+    const noticeRef = NOTICE_REF().doc(rootGetters['auth/user'].uid)
+    return await noticeRef.get().then(function(doc) {
+      return doc.data()
+    })
+  },
+  // リスト取得
+  async getNoticeList ({ dispatch, commit, getters, rootGetters }, payload) {
+    const refData = await dispatch('getNoticeListRef')
+
+    // 初期化
+    // ;(v => {
+    //   for (let i=1; i<=refData.count; i++) {
+    //     const item = {
+    //       id: '',
+    //       status: STATUS.NOT_RECRUITING,
+    //       name: '',
+    //       updated_at: '',
+    //       reply: 0
+    //     }
+    //     commit('setNoticeList', { index: i, item })
+    //   }
+    // })()
+
+    // 実データ取得
+    const getData = async (items, index) => {
+      const item = await items[index].get()
+      return {
+        key: index,
+        value: item
+      }
+    }
+
+    // 非同期まとめて格納
+    const promises = []
+    for(const index in refData.items) {
+      promises.push(getData(refData.items, index))
+    }
+
+    // 非同期まとめて処理
+    await Promise.all(promises).then(items => {
+      for(const data of items){
+        console.log(data.value.data())
+        const id = data.value.data().id
+        const item = {
+          id: data.value.data().id,
+          status: data.value.data().status,
+          name: data.value.data().name,
+          updated_at: data.value.data().updated_at,
+          reply: data.value.data().reply
+        }
+        commit('setNoticeList', { id, item })
+      }
+    })
+  },
+
   async RefreshCommentList ({ dispatch, commit, getters, rootGetters }, payload) {
     const commentRef = COMMENT_REF().doc(payload.itemId)
     return await commentRef.get().then(function(doc) {

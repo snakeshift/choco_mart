@@ -16,6 +16,10 @@ const TALK_TYPE = {
   RECRUIT: 3,
   OTHER: 4
 }
+const COMMENT_TYPE = {
+  LIST: 'lists',
+  TALK: 'talks'
+}
 const TYPE_TEXT = {
   [TYPE.BUY]: '求める',
   [TYPE.SELL]: '出品する',
@@ -32,7 +36,25 @@ const TYPE_COLOR = {
   [TYPE.BUY]: '#FF8F00',
   [TYPE.SELL]: '#00ACC1' 
 }
-const TALK_TYPE_TEXT = {
+const TALK_TYPE_SELECT = [
+  {
+    VALUE: TALK_TYPE.CHAT,
+    TEXT: '雑談'
+  },
+  {
+    VALUE: TALK_TYPE.ACTING,
+    TEXT: '代行'
+  },
+  {
+    VALUE: TALK_TYPE.RECRUIT,
+    TEXT: '募集'
+  },
+  {
+    VALUE: TALK_TYPE.OTHER,
+    TEXT: 'その他'
+  }
+]
+const TALK_TYPE_TEXT_SHORT = {
   [TALK_TYPE.CHAT]: '雑',
   [TALK_TYPE.ACTING]: '代',
   [TALK_TYPE.RECRUIT]: '募',
@@ -63,8 +85,10 @@ export {
   TYPE_TEXT_SHORT,
   TYPE_COLOR,
   TALK_TYPE,
-  TALK_TYPE_TEXT,
+  TALK_TYPE_SELECT,
+  TALK_TYPE_TEXT_SHORT,
   TALK_TYPE_COLOR,
+  COMMENT_TYPE,
   STATUS,
   STATUS_TEXT
 }

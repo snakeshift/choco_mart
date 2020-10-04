@@ -3,9 +3,11 @@ admin.initializeApp()
 
 const users = require('./firestore/users')
 const lists = require('./firestore/lists')
+const talks = require('./firestore/talks')
 
 exports.users = users
 exports.lists = lists
+exports.talks = talks
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions

@@ -54,7 +54,7 @@
                 <span class="text-choco-dark">-</span>
               </template>
               <template v-else>
-                <span class="text-choco-dark link pointer" @click="$emit('showReply', item.id, 'lists')">{{item.reply}}</span>
+                <span class="text-choco-dark link pointer" @click="$emit('showReply', item.id, COMMENT_TYPE.LIST)">{{item.reply}}</span>
               </template>
             </div>
           </td>
@@ -64,10 +64,10 @@
     <v-row justify="center">
       <v-dialog
         v-model="dialog.isShow"
-        max-width="500"
+        max-width="300"
         width="90%"
       >
-        <div class="modal-choco">
+        <div class="modal-choco" style="height: 200px;">
           <div class="head text-choco pl-2 body-2">
             {{dialog.title}}
           </div>
@@ -99,7 +99,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
-import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT } from '@/config/library'
+import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
@@ -226,6 +226,7 @@ export default {
     TYPE: () => TYPE,
     STATUS: () => STATUS,
     STATUS_TEXT: () => STATUS_TEXT,
+    COMMENT_TYPE: () => COMMENT_TYPE,
     ...mapGetters({
       user: 'auth/user',
       items: 'firebase/buyList'
