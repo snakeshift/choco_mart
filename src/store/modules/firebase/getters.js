@@ -23,6 +23,15 @@ export default {
   talkMemberList: state => {
     return state.talkMembers
   },
+  talkMemberTradeList: state => {
+    return state.talkMemberTrades
+  },
+  listenerList: state => {
+    return state.listeners
+  },
+  noticeBadge: state => {
+    return Math.floor(state.badges.notices)
+  },
   count: state => {
     return state.counts
   },

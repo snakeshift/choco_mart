@@ -25,6 +25,10 @@
       background: #F46A6E !important;
       box-shadow: -8px 0 0px -6px #F0373D inset, 8px 0 0px -6px #F0373D inset,0 -8px 5px -5px #F0373D inset,0px 0px 0px 2px #fff !important;
     }
+    &.secondary{
+      background: #333333 !important;
+      box-shadow: -8px 0 0px -6px #333333 inset, 8px 0 0px -6px #333333 inset,0 -8px 5px -5px #333333 inset,0px 0px 0px 2px #fff !important;
+    }
   }
   .modal-choco{
     height: 300px;

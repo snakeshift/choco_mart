@@ -34,7 +34,30 @@ export default {
   resetTalkMemberList(state, payload) {
     state.talkMembers = {}
   },
+  setTalkMemberTradeList(state, payload) {
+    state.talkMemberTrades[payload.type].push(payload.item)
+  },
+  resetTalkMemberTradeList(state, payload) {
+    state.talkMemberTrades = {
+      buys: [],
+      sells: []
+    }
+  },
+  setListenerList(state, payload) {
+    Vue.set(state.listeners[payload.type], payload.id, payload.unsubscribe)
+  },
+  resetListenerList(state, payload) {
+    state.listeners[payload.type][payload.id]()
+    Vue.delete(state.listeners[payload.type], payload.id)
+    Vue.delete(state.notices, payload.id)
+  },
+  setBadge(state, payload) {
+    state.badges[payload.type] += 0.5 // timeStampの更新がサーバー側で行われるため、2回で1カウント
+  },
+  resetBadge(state, payload) {
+    state.badges[payload.type] = 0
+  },
   setCount(state, payload) {
     state.counts[payload.type] = payload.count
-  }
+  },
 }

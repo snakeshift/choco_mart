@@ -13,8 +13,8 @@
                 <v-col class="py-0">
                   <div class="input-text-choco back-choco-dark">
                     <label for="user_name" class="text-choco body-2">名前</label>
-                    <input v-if="!User.displayName" type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" v-model="userName">
-                    <input v-else type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" :value="User.displayName" readonly>
+                    <input v-if="!user.displayName" type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" v-model="userName">
+                    <input v-else type="text" name="user_name" class="text-choco-dark body-2" placeholder="名も無き冒険者" maxlength="15" :value="user.displayName" readonly>
                   </div>
                   <v-btn color="#1E2E58" fab dark class="ml-1 name-check" v-if="!is_empty(userName) && !isSetUserName" @click="showNameDialog()">
                     <v-icon>mdi-check-bold</v-icon>
@@ -29,8 +29,18 @@
         <div class="tab-choco">
           <table class="item-tab-choco back-choco pa-2 pl-1" cellspacing="5">
             <tr class="item-th-choco text-choco body-2">
-              <th v-for="(content, index) in TYPE_TEXT" :key="index" @click="setTab(index)" :class="{'isChecked': index == selected}">
+              <th v-for="(content, index) in TYPE_TEXT" :key="index" @click="setTab(index)" :class="{'isChecked': index == selected}" class="pos-rel">
                 {{content}}
+                <transition>
+                  <v-badge
+                    v-if="index == TYPE.MY_PAGE && !is_empty(noticeBadge)"
+                    class="badge-choco"
+                    :content="noticeBadge"
+                    color="red"
+                    overlap
+                  >
+                  </v-badge>
+                </transition>
               </th>
             </tr>
           </table>
@@ -48,11 +58,11 @@
           <transition name="slide-left">
             <talk v-if="isLoaded" v-show="selected == TYPE.TALK && !isShow.comment" @showReply = showReply></talk>
           </transition>
-          <!-- <transition name="slide-left">
-            <mypage v-if="isLoaded" v-show="selected == TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
-          </transition> -->
           <transition name="slide-left">
-            <comment v-if="isLoaded" v-show="isShow.comment" ref="comment" @closeReply = closeReply></comment>
+            <mypage v-if="isLoaded" v-show="selected == TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
+          </transition>
+          <transition name="slide-left">
+            <comment v-if="isLoaded" v-show="isShow.comment" ref="comment" @closeReply = closeReply @showReply = showReply></comment>
           </transition>
         </div>
       </v-card>
@@ -80,7 +90,8 @@
         </div>
       </v-dialog>
     </v-row>
-    <loading></loading>
+    <loading />
+    <errorModal />
   </div>
 </template>
 
@@ -100,6 +111,7 @@ import talk from '@/components/talk.vue'
 import mypage from '@/components/mypage.vue'
 import comment from '@/components/comment.vue'
 import loading from '@/components/loading.vue'
+import errorModal from '@/components/errorModal.vue'
 
 export default {
   name: 'Home',
@@ -108,9 +120,10 @@ export default {
     sell,
     list,
     talk,
-    // mypage,
+    mypage,
     comment,
-    loading
+    loading,
+    errorModal
   },
   data () {
     return {
@@ -141,7 +154,7 @@ export default {
   },
   methods: {
     async setUserName () {
-      let isSetCorrectly = await this.updateUserName({userName: this.userName})
+      const isSetCorrectly = await this.updateUserName({userName: this.userName})
       if(isSetCorrectly) {
         this.isSetUserName = true
         this.dialog.isShow = false
@@ -192,6 +205,9 @@ export default {
       this.selected = index
       this.isShow.comment = false
       this.$refs.comment.closeListener()
+      if (index == TYPE.MY_PAGE) {
+        this.resetBadge({type: 'notices'})
+      }
     },
     ...mapMutations('loading', [
       'setIsLoading',
@@ -199,6 +215,9 @@ export default {
     ]),
     ...mapMutations('auth', [
       'setUserInfo'
+    ]),
+    ...mapMutations('firebase', [
+      'resetBadge'
     ]),
     ...mapActions('auth', [
       'getUserAnonymously',
@@ -226,14 +245,12 @@ export default {
     TYPE: () => TYPE,
     TYPE_TEXT: () => TYPE_TEXT,
     ...mapGetters({
-      isLoading: 'loading/isLoading'
+      isLoading: 'loading/isLoading',
+      user: 'auth/user',
+      noticeBadge: 'firebase/noticeBadge'
     }),
-    ...mapGetters('auth', [
-      'user'
-    ])
   },
-  watch: {
-  },
+  watch: {},
 }
 </script>
 
@@ -276,5 +293,10 @@ export default {
   position: relative;
   // height: 100%;
   height: calc(100% - 30px - 46px - 54px - 19px);
+}
+.badge-choco {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 </style>

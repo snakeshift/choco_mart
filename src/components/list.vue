@@ -115,7 +115,6 @@ export default {
         isSearched: false,
         loading: false
       },
-      count: 0,
       limit: 20,
     }
   },

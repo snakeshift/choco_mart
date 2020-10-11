@@ -80,8 +80,31 @@ export default {
         return true
       }
     },
+    async registerBan ({ dispatch, commit, getters, rootGetters }, payload) {
+      const userId = payload.userId
+      const userRef = USER_REF().doc(userId)
+      userRef.update({
+        isBan: true
+      })
+    },
+    async releaseBan ({ dispatch, commit, getters, rootGetters }, payload) {
+      const userId = payload.userId
+      const userRef = USER_REF().doc(userId)
+      userRef.update({
+        isBan: false
+      })
+    },
     async RefreshUser ({ dispatch, commit, getters, rootGetters }, payload) {
       dispatch('getUserAnonymously')
     },
+    async updateIcon ({ dispatch, commit, getters, rootGetters }, payload) {
+      const userRef = USER_REF().doc(getters.user.uid)
+      await userRef.update({
+        icon: payload.icon
+      })
+      userRef.get().then(function(doc) {
+        commit('setUserInfo', doc.data())
+      })
+    }
   }
 }

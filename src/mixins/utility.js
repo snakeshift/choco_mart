@@ -43,7 +43,7 @@ export default{
       }
     }, // End of is_empty()
     isset ( _var ) {
-      if(_var === "" || _var === null || _var === undefined){
+      if(_var === '' || _var === null || _var === undefined){
           return false;
       }else{
           return true;
@@ -54,7 +54,7 @@ export default{
       return (index !== -1) ? true : false;
     },
     getFormatedDate (timeStamp) {
-      const weekIdx = ["日", "月", "火", "水", "木", "金", "土"]
+      const weekIdx = ['日', '月', '火', '水', '木', '金', '土']
       const date = new Date(timeStamp * 1000)
       const year  = date.getFullYear()
       const month = date.getMonth() + 1
@@ -72,13 +72,13 @@ export default{
       const min  = ( date.getMinutes() < 10 ) ? '0' + date.getMinutes() : date.getMinutes()
       const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
 
-      return (date < yesterday) ? "数日前" : date.getDate() == now.getDate() ? `今日 ${hour}:${min}` : `昨日 ${hour}:${min}`
+      return (date < yesterday) ? '数日前' : date.getDate() == now.getDate() ? `今日 ${hour}:${min}` : `昨日 ${hour}:${min}`
     },
     getIconImageStyle (imgNo,isOwn) {
-      let styles = ""
+      let styles = ''
       let imgStyleData = {}
 
-      const px_25 = ["1","2","3","4","5","9","10","11","12","13","14","15","28","29","30"]
+      const px_25 = ['1','2','3','4','5','9','10','11','12','13','14','15','28','29','30']
 
       const ratio = {
         1: [36,32], 2: [36,32], 3: [36,32], 4: [36,32], 5: [36,32],
@@ -112,30 +112,25 @@ export default{
 
       styles += `width: ${imgStyleData[imgNo].width}px; height: ${imgStyleData[imgNo].height}px;`
       if(isOwn) {
-        styles += "transform: scale(-1, 1);"
+        styles += 'transform: scale(-1, 1);'
       }
       return styles
     },
     trimText (text,limit) {
-      return text.length > limit ? (text).slice(0,limit-1)+".." : text
+      return text.length > limit ? (text).slice(0,limit-1)+'..' : text
     },
     scrollTo(targetElement,direction,wait) {
       this.$nextTick(() => {
         setTimeout(function(){
           if(targetElement.scrollHeight != 0){
-            let scrollTop = (direction == "top") ? 0 : (direction == "bottom") ? targetElement.scrollHeight : 0
+            let scrollTop = (direction == 'top') ? 0 : (direction == 'bottom') ? targetElement.scrollHeight : 0
             targetElement.scrollTo({
               top: scrollTop,
-              behavior: "smooth"
+              behavior: 'smooth'
             });
           }
         },wait)
       })
-    },
-  },
-  computed: {
-    db() {
-      return firebase.firestore();
     }
   }
 }

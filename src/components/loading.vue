@@ -3,11 +3,11 @@
     <transition name="fade">
       <v-overlay :value="isLoading" v-show="isLoading" opacity="0.3">
         <v-row class="loading">
-            <v-img src="@/assets/imgs/piramon.png" class="piramon"></v-img>
-            <div class="loadIcon">
-                <v-img src="@/assets/imgs/load.gif"></v-img>
-                <div class="statusMsg">{{statusMsg}}</div>
-            </div>
+          <v-img src="@/assets/imgs/piramon.png" class="piramon"></v-img>
+          <div class="loadIcon">
+            <v-img src="@/assets/imgs/load.gif"></v-img>
+            <div class="statusMsg">{{statusMsg}}</div>
+          </div>
         </v-row>
         <Snowf
             :amount="amount"

@@ -8,7 +8,8 @@ export default {
 
   // reference取得
   async getBuyListRef ({ dispatch, commit, getters, rootGetters }, payload) {
-    const buyRef = BUY_REF().doc(rootGetters['auth/user'].uid)
+    const {userId} = {...payload}
+    const buyRef = BUY_REF().doc(userId)
     return await buyRef.get().then(function(doc) {
       return doc.data()
     })
@@ -35,7 +36,7 @@ export default {
   },
   // リスト取得
   async getBuyList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const refData = await dispatch('getBuyListRef')
+    const refData = await dispatch('getBuyListRef', {userId: rootGetters['auth/user'].uid})
 
     // 初期化
     ;(v => {
@@ -124,17 +125,25 @@ export default {
     item.reply = 1
     item.status = STATUS.UNDER_RECRUITING
 
-    // 販売リスト更新(個人)
-    await buyRef.update({
-      ['items.' + index]: listRef
+    const promises = [
+      // 販売リスト更新(個人)
+      buyRef.update({
+        ['items.' + index]: listRef
+      }),
+      // 販売リスト更新(全体)
+      listRef.set({ ...itemData }),
+      // スレッド作成
+      commentRef.set({ ...commentData })
+    ]
+
+    Promise.all(promises).then(items => {
+      // リスナー登録
+      dispatch('setBuyListListener', {id: item.id, index})
+      commit('setBuyList', { index, item })
+    }).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
     })
-    // 販売リスト更新(全体)
-    await listRef.set({ ...itemData })
-    // スレッド作成
-    await commentRef.set({ ...commentData })
-    // // リスナー登録
-    dispatch('setBuyListListener', {id: item.id, index})
-    commit('setBuyList', { index, item })
   },
   // 締め切る
   async closeBuyList ({ dispatch, commit, getters, rootGetters }, payload) {
@@ -158,28 +167,34 @@ export default {
       msg: '取引を締め切りました。',
       created_at: now
     }
-    // 販売リスト更新(個人)
-    await buyRef.update({
-      ['items.' + index]: DELETE()
-    })
-    // 販売リスト更新(全体)
-    await listRef.update({
-      ...itemData 
-    })
-    // チャット更新
-    await commentRef.update({
-      reply: ARRAY_UNION(commentData)
-    })
+    const promises = [
+      // 販売リスト更新(個人)
+      buyRef.update({
+        ['items.' + index]: DELETE()
+      }),
+      // 販売リスト更新(全体)
+      listRef.update({
+        ...itemData 
+      }),
+      // チャット更新
+      commentRef.update({
+        reply: ARRAY_UNION(commentData)
+      })
+    ]
 
-    // itemを初期化
-    item.id = ''
-    item.status = STATUS.NOT_RECRUITING
-    item.name = ''
-    item.price = ''
-    item.reply = 0
-
-    // 出品枠を空に
-    commit('setBuyList', { index, item })
+    Promise.all(promises).then(items => {
+      // itemを初期化
+      item.id = ''
+      item.status = STATUS.NOT_RECRUITING
+      item.name = ''
+      item.price = ''
+      item.reply = 0
+      // 出品枠を空に
+      commit('setBuyList', { index, item })
+    }).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
+    })
   },
   // 価格変更
   async setBuyListPrice ({ dispatch, commit, getters, rootGetters }, payload) {
@@ -199,13 +214,21 @@ export default {
       msg: `価格の変更を行いました。<br>${item.price} → 【${newPrice}】`,
       created_at: now
     }
-    // 販売リスト更新(全体)
-    await listRef.update({
-       ...itemData 
-    })
-    // 値段変更通知
-    await commentRef.update({
-      reply: ARRAY_UNION(commentData)
+
+    const promises = [
+      // 販売リスト更新(全体)
+      listRef.update({
+        ...itemData 
+      }),
+      // 値段変更通知
+      commentRef.update({
+        reply: ARRAY_UNION(commentData)
+      })
+    ]
+
+    Promise.all(promises).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
     })
   },
 
@@ -213,7 +236,8 @@ export default {
 
   // reference取得
   async getSellListRef ({ dispatch, commit, getters, rootGetters }, payload) {
-    const sellRef = SELL_REF().doc(rootGetters['auth/user'].uid)
+    const {userId} = {...payload}
+    const sellRef = SELL_REF().doc(userId)
     return await sellRef.get().then(function(doc) {
       return doc.data()
     })
@@ -240,7 +264,7 @@ export default {
   },
   // リスト取得
   async getSellList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const refData = await dispatch('getSellListRef')
+    const refData = await dispatch('getSellListRef', {userId: rootGetters['auth/user'].uid})
 
     // 初期化
     ;(v => {
@@ -329,17 +353,25 @@ export default {
     item.reply = 1
     item.status = STATUS.UNDER_RECRUITING
 
-    // 販売リスト更新(個人)
-    await sellRef.update({
-      ['items.' + index]: listRef
+    const promises = [
+      // 販売リスト更新(個人)
+      sellRef.update({
+        ['items.' + index]: listRef
+      }),
+      // 販売リスト更新(全体)
+      listRef.set({ ...itemData }),
+      // スレッド作成
+      commentRef.set({ ...commentData })
+    ]
+
+    Promise.all(promises).then(items => {
+      // リスナー登録
+      dispatch('setSellListListener', {id: item.id, index})
+      commit('setSellList', { index, item })
+    }).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
     })
-    // 販売リスト更新(全体)
-    await listRef.set({ ...itemData })
-    // スレッド作成
-    await commentRef.set({ ...commentData })
-    // // リスナー登録
-    dispatch('setSellListListener', {id: item.id, index})
-    commit('setSellList', { index, item })
   },
   // 締め切る
   async closeSellList ({ dispatch, commit, getters, rootGetters }, payload) {
@@ -363,28 +395,35 @@ export default {
       msg: '取引を締め切りました。',
       created_at: now
     }
-    // 販売リスト更新(個人)
-    await sellRef.update({
-      ['items.' + index]: DELETE()
-    })
-    // 販売リスト更新(全体)
-    await listRef.update({
-      ...itemData 
-    })
-    // チャット更新
-    await commentRef.update({
-      reply: ARRAY_UNION(commentData)
-    })
 
-    // itemを初期化
-    item.id = ''
-    item.status = STATUS.NOT_RECRUITING
-    item.name = ''
-    item.price = ''
-    item.reply = 0
+    const promises = [
+      // 販売リスト更新(個人)
+      sellRef.update({
+        ['items.' + index]: DELETE()
+      }),
+      // 販売リスト更新(全体)
+      listRef.update({
+        ...itemData 
+      }),
+      // チャット更新
+      commentRef.update({
+        reply: ARRAY_UNION(commentData)
+      })
+    ]
 
-    // 出品枠を空に
-    commit('setSellList', { index, item })
+    Promise.all(promises).then(items => {
+      // itemを初期化
+      item.id = ''
+      item.status = STATUS.NOT_RECRUITING
+      item.name = ''
+      item.price = ''
+      item.reply = 0
+      // 出品枠を空に
+      commit('setSellList', { index, item })
+    }).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
+    })
   },
   // 価格変更
   async setSellListPrice ({ dispatch, commit, getters, rootGetters }, payload) {
@@ -404,13 +443,21 @@ export default {
       msg: `価格の変更を行いました。<br>${item.price} → 【${newPrice}】`,
       created_at: now
     }
-    // 販売リスト更新(全体)
-    await listRef.update({
-       ...itemData 
-    })
-    // 値段変更通知
-    await commentRef.update({
-      reply: ARRAY_UNION(commentData)
+
+    const promises = [
+      // 販売リスト更新(全体)
+      listRef.update({
+        ...itemData 
+      }),
+      // 値段変更通知
+      commentRef.update({
+        reply: ARRAY_UNION(commentData)
+      })
+    ]
+
+    Promise.all(promises).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
     })
   },
 
@@ -532,10 +579,17 @@ export default {
       updated_at: CURRENT_TIME()
     }
 
-    // 販売リスト更新(全体)
-    await talkRef.set({ ...itemData })
-    // スレッド作成
-    await commentRef.set({ ...commentData })
+    const promises = [
+      // 販売リスト更新(全体)
+      talkRef.set({ ...itemData }),
+      // スレッド作成
+      commentRef.set({ ...commentData })
+    ]
+
+    Promise.all(promises).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
+    })
   },
 
   // ------------------------------------- 「コメント」関連の処理 -------------------------------------
@@ -568,9 +622,12 @@ export default {
     const promises = []
     const userIds = []
     for(const content of reply) {
-      // 同じトークを開いている限りはキャッシュ利用、それ以外は最初から取得
-      if (userIds.includes(content.uid) || content.uid in getters['talkMemberList']) continue
-      console.log(content.uid)
+      // 同じトークを開いている限りはキャッシュ利用、それ以外は最初から取得 / 自分の場合は関数を呼ぶたびに再取得 (アイコン変更検知)
+      if(content.uid === rootGetters['auth/user'].uid) {
+        if(userIds.includes(content.uid)) continue
+      } else if (userIds.includes(content.uid) || content.uid in getters['talkMemberList']){
+        continue
+      }
       promises.push(getData(content.uid))
       userIds.push(content.uid)
     }
@@ -579,6 +636,49 @@ export default {
     await Promise.all(promises).then(users => {
       for(const user of users) {
         commit('setTalkMemberList', { id: user.id, userData: user.userData })
+      }
+    })
+  },
+
+  async getUserTradeList ({ dispatch, commit, getters, rootGetters }, payload) {
+    // 初期化
+    commit('resetTalkMemberTradeList')
+
+    const {userId} = {...payload}
+    const buyRefData = await dispatch('getBuyListRef', {userId})
+    const sellRefData = await dispatch('getSellListRef', {userId})
+
+    // 実データ取得
+    const getData = async (items, index) => {
+      const item = await items[index].get()
+      return {
+        key: index,
+        value: item
+      }
+    }
+
+    // 非同期まとめて格納
+    const promises = []
+    for(const index in buyRefData.items) {
+      promises.push(getData(buyRefData.items, index))
+    }
+    for(const index in sellRefData.items) {
+      promises.push(getData(sellRefData.items, index))
+    }
+
+    // 非同期まとめて処理
+    Promise.all(promises).then(items => {
+      for(const data of items){
+        const item = {
+          id: data.value.data().id,
+          status: data.value.data().status,
+          name: data.value.data().name,
+          price: data.value.data().price,
+          reply: data.value.data().reply,
+          type: data.value.data().type
+        }
+        const type = item.type === TYPE.BUY ? 'buys' : 'sells'
+        commit('setTalkMemberTradeList', { type, item })
       }
     })
   },
@@ -621,6 +721,7 @@ export default {
     await commentRef.update({
        ...commentData 
     })
+
   },
 
   async registerComment({ dispatch, commit, getters, rootGetters }, payload){
@@ -640,11 +741,19 @@ export default {
       updated_at: CURRENT_TIME(),
       reply: INCREMENT(1)
     }
-    await commentRef.update({
-      reply: ARRAY_UNION(commentData)
-    });
-    await talkOrListRef.update({
-       ...itemData 
+
+    const promises = [
+      commentRef.update({
+        reply: ARRAY_UNION(commentData)
+      }),
+      talkOrListRef.update({
+        ...itemData 
+     })
+    ]
+
+    Promise.all(promises).catch(() => {
+      commit('modal/setIsShowError', true, { root: true })
+      commit('modal/setStatusMsg', 'データの更新に失敗しました。', { root: true })
     })
   },
 
@@ -652,28 +761,14 @@ export default {
 
   // reference取得
   async getNoticeListRef ({ dispatch, commit, getters, rootGetters }, payload) {
-    const noticeRef = NOTICE_REF().doc(rootGetters['auth/user'].uid)
-    return await noticeRef.get().then(function(doc) {
+    const query = NOTICE_REF().doc(rootGetters['auth/user'].uid)
+    return await query.get().then(function(doc) {
       return doc.data()
     })
   },
-  // リスト取得
+  // リスト取得 (リスナーと紐づいているため、初回のみ読み込み)
   async getNoticeList ({ dispatch, commit, getters, rootGetters }, payload) {
     const refData = await dispatch('getNoticeListRef')
-
-    // 初期化
-    // ;(v => {
-    //   for (let i=1; i<=refData.count; i++) {
-    //     const item = {
-    //       id: '',
-    //       status: STATUS.NOT_RECRUITING,
-    //       name: '',
-    //       updated_at: '',
-    //       reply: 0
-    //     }
-    //     commit('setNoticeList', { index: i, item })
-    //   }
-    // })()
 
     // 実データ取得
     const getData = async (items, index) => {
@@ -693,30 +788,55 @@ export default {
     // 非同期まとめて処理
     await Promise.all(promises).then(items => {
       for(const data of items){
-        console.log(data.value.data())
         const id = data.value.data().id
-        const item = {
-          id: data.value.data().id,
-          status: data.value.data().status,
-          name: data.value.data().name,
-          updated_at: data.value.data().updated_at,
-          reply: data.value.data().reply
-        }
-        commit('setNoticeList', { id, item })
+        const kind = 'price' in data.value.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
+        dispatch('setNoticeListener', { id, kind })
+        commit('setBadge', { type: 'notices' })
       }
     })
   },
 
-  async RefreshCommentList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const commentRef = COMMENT_REF().doc(payload.itemId)
-    return await commentRef.get().then(function(doc) {
-      return doc.data()
+  // お気に入りの各itemの監視
+  async setNoticeListener ({ dispatch, commit, getters, rootGetters }, payload) {
+    const {id, kind} = {...payload}
+    const talkOrListRef = kind === COMMENT_TYPE.LIST
+      ? LIST_REF().doc(id)
+      : TALK_REF().doc(id)
+
+    const unsubscribe = talkOrListRef.onSnapshot(function (querySnapshot) {
+      const id = querySnapshot.data().id
+      const item = querySnapshot.data()
+      commit('setNoticeList', { id, item })
+      commit('setBadge', { type: 'notices' })
     })
+    // リスナー停止用にstoreにセット
+    commit('setListenerList', {type: 'notices', id, unsubscribe })
   },
-  async RefreshSellList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const sellRef = SELL_REF().doc(rootGetters['auth/user'].uid)
-    return await sellRef.get().then(function(doc) {
-      return doc.data()
+
+  // お気に入りタブの増減の監視
+  async watchNoticeList ({ dispatch, commit, getters, rootGetters }, payload) {
+    NOTICE_REF().doc(rootGetters['auth/user'].uid).onSnapshot(function (querySnapshot) {
+      const items = querySnapshot.data().items
+      const notices = getters.listenerList.notices
+      // 増えているか判別
+      items.forEach(async function(item) {
+        // idがまだリスナーに含まれていなければ追加
+        if (!(item.id in notices)) {
+          const data = await item.get()
+          const id = data.data().id
+          const kind = 'price' in data.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
+          dispatch('setNoticeListener', {id, kind})
+          commit('setBadge', { type: 'notices' })
+        }
+      })
+      // 減っているか判別
+      for (const id in notices) {
+        const item = items.find(item => item.id === id)
+        // storeに存在するidがsnapshotに存在しない = 解除したアイテム
+        if (!item) {
+          commit('resetListenerList', {type: 'notices', id })
+        }
+      }
     })
   }
 }

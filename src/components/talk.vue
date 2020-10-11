@@ -5,7 +5,7 @@
         <table class="item-table-choco back-choco" cellspacing="0">
           <thead>
             <tr class="item-th-choco text-choco body-2">
-              <th>タイトル名</th>
+              <th>タイトル</th>
               <th>投稿者</th>
               <th>返</th>
             </tr>
@@ -145,7 +145,6 @@ export default {
           }
         },
       },
-      count: 0,
       limit: 20,
       chat: {
         selectedType: TALK_TYPE.CHAT,

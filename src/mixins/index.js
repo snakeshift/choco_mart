@@ -1,7 +1,5 @@
-import Library from './library'
 import Utility from './utility'
-import Api from './api'
 
 export default {
-  mixins:[Utility,Api]
+  mixins:[Utility]
 };

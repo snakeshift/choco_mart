@@ -11,18 +11,23 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, (item.title) ? 'talks' : 'lists')">
+            <tr v-for="(item,index) in sortedItems" :key="index" class="item-td-choco text-choco pointer" @click="$emit('showReply', item.id, (item.title) ? COMMENT_TYPE.TALK : COMMENT_TYPE.LIST)">
               <td>
                 <div class="item-input-choco">
-                  <v-chip dark :color="item.title ? TALK_TYPE_COLOR[item.type] : (item.status == 3) ? '' : TYPE_COLOR[item.type]" x-small class="chip">
+                  <v-chip
+                    dark
+                    :color="item.title ? TALK_TYPE_COLOR[item.type] : item.status === STATUS.FINISH ? '' : TYPE_COLOR[item.type]"
+                    x-small
+                    class="chip"
+                  >
                     <template v-if="item.title">
-                      {{TALK_TYPE[item.type]}}
+                      {{TALK_TYPE_TEXT_SHORT[item.type]}}
                     </template>
-                    <template v-else-if="item.status == 3">
-                      終
+                    <template v-else-if="item.status === STATUS.FINISH">
+                      {{TYPE_TEXT_SHORT[STATUS.FINISH]}}
                     </template>
                     <template v-else>
-                      {{TYPE[item.type]}}
+                      {{TYPE_TEXT_SHORT[item.type]}}
                     </template>
                   </v-chip>
                   <span type="text" class="text-choco-dark pl-12 text-truncate">
@@ -51,42 +56,6 @@
           </tbody>
         </table>
       </div>
-      <v-row justify="center" class="pa-0"></v-row>
-      <ul class="pager">
-        <li v-for="n in getPageIndex" :key="n" class="pager_li" @click="changePage(n)">
-          <template v-if="pageSetting.index == n">
-            <v-icon color="primary">mdi-numeric-{{n}}-box</v-icon>
-          </template>
-          <template v-else>
-            <v-icon>mdi-numeric-{{n}}-box</v-icon>
-          </template>
-        </li>
-      </ul>
-      <v-overlay :value="overlay">
-        <v-row class="icon_select_area">
-          <v-col>
-            <v-btn class="mt-1 mb-1" fab dark small text icon v-for="n in 37" :key="n" @click="setIcon(n)">
-              <v-avatar color="" size="30">
-                <img :src="require('@/assets/imgs/avatars/'+n+'.gif')" :style="getIconImageStyle(n,true)">
-              </v-avatar>
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col class="d-flex justify-center">
-            <v-btn color="primary" class="button-choco text-choco" dark @click="overlay = false">
-              <span>閉じる</span>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-overlay>
-    </div>
-    <div class="panel-choco">
-      <v-btn class="mx-2 write" fab dark small color="light-green lighten-2" @click="overlay = true">
-        <v-avatar color="" size="30">
-          <img :src="require(`@/assets/imgs/avatars/${userInfo.icon}.gif`)" :style="getIconImageStyle(userInfo.icon,true)">
-        </v-avatar>
-      </v-btn>
     </div>
   </div>
 </template>
@@ -95,112 +64,90 @@
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
 import store from '@/store'
+import { TYPE, TYPE_TEXT, TYPE_COLOR, TALK_TYPE, TALK_TYPE_SELECT, TALK_TYPE_TEXT_SHORT, TALK_TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT, COMMENT_TYPE } from '@/config/library'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
+import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
 export default {
   data () {
     return {
       overlay: false,
-      count: 0,
-      items: {},
       notices: [],
-      pageSetting: {
-        index: 1,
-        interval: 21
-      },
-      types: [
-        {value: 1, text: "雑談"},
-        {value: 2, text: "代行"},
-        {value: 3, text: "募集"},
-        {value: 4, text: "その他"}
-      ],
       chat: {
         selectedType: 1,
-        title: "",
-        content: "",
+        title: '',
+        content: '',
         isShow: false,
         isClicked: false
-      },
+      }
     }
   },
   methods: {
-    async init(){
-      let t = this
-      let noticeRef = t.db.collection("notices")
-      await noticeRef.onSnapshot(function (querySnapshot) {
-        t.refreshNotice()
-      })
-    },
-    async refresh(){
-      this.refreshNotice()
-    },
-    async refreshNotice(){
-      let noticeRef = await firebase.firestore().collection("notices").doc(this.user.uid)
-      let noticeData = await noticeRef.get()
-      this.notices = await noticeData.data().items
-      this.items = {}
-      let t = this
-      for(let item of this.notices) {
-        let itemData = await firebase.firestore().doc(item.path).get()
-        let content = itemData.data()
-        let kind = content.title ? "talks" : "lists"
-        let listRef = this.db.collection(kind)
-        await listRef.doc(content.id).onSnapshot(function (querySnapshot) {
-          t.$set(t.items, querySnapshot.data().id, querySnapshot.data())
-        })
-      }
-    },
-    async setIcon(iconNo){
-      let userRef = firebase.firestore().collection("users").doc(this.user.uid)
-      await userRef.update({
-        icon: iconNo
-      })
-      await userRef.get().then(function(doc) {
-        store.commit('auth/setUserInfo', doc.data());
-      })
-      this.overlay = false
-    },
-    changePage(index){
-      this.pageSetting.index = index
-      this.scrollTo(this.$refs.mypage_table,"top",100)
-    },
+    // async init(){
+    //   let t = this
+    //   let noticeRef = t.db.collection("notices")
+    //   await noticeRef.onSnapshot(function (querySnapshot) {
+    //     t.refreshNotice()
+    //   })
+    // },
+    // async refresh(){
+    //   this.refreshNotice()
+    // },
+    // async refreshNotice(){
+    //   let noticeRef = await firebase.firestore().collection("notices").doc(this.user.uid)
+    //   let noticeData = await noticeRef.get()
+    //   this.notices = await noticeData.data().items
+    //   this.items = {}
+    //   let t = this
+    //   for(let item of this.notices) {
+    //     let itemData = await firebase.firestore().doc(item.path).get()
+    //     let content = itemData.data()
+    //     let kind = content.title ? "talks" : "lists"
+    //     let listRef = this.db.collection(kind)
+    //     await listRef.doc(content.id).onSnapshot(function (querySnapshot) {
+    //       t.$set(t.items, querySnapshot.data().id, querySnapshot.data())
+    //     })
+    //   }
+    // },
+    ...mapActions('firebase', ['getNoticeList', 'setNoticeListener', 'watchNoticeList'])
   },
   computed: {
+    TALK_TYPE: () => TALK_TYPE,
+    TALK_TYPE_COLOR: () => TALK_TYPE_COLOR,
+    TALK_TYPE_SELECT: () => TALK_TYPE_SELECT,
+    TALK_TYPE_TEXT_SHORT: () => TALK_TYPE_TEXT_SHORT,
+    STATUS: () => STATUS,
+    STATUS_TEXT: () => STATUS_TEXT,
+    TYPE: () => TYPE,
+    TYPE_COLOR: () => TYPE_COLOR,
+    TYPE_TEXT_SHORT: () => TYPE_TEXT_SHORT,
+    COMMENT_TYPE: () => COMMENT_TYPE,
     ...mapGetters({
       user: 'auth/user',
-      userInfo: 'auth/userInfo'
+      userInfo: 'auth/userInfo',
+      items: 'firebase/noticeList'
     }),
     sortedItems() {
-      let sorted = {};
-      let array = [];
-      let t = this
-
-      for (let key in t.items) { array.push(key);}
+      const sortedItems = {}
+      const array = []
+      const items = this.items
+      for (const key in items) { array.push(key)}
       array.sort(function(a,b){
-        if(t.items[a].updated_at && t.items[b].updated_at) {
-          return (t.items[a].updated_at.seconds < t.items[b].updated_at.seconds) ? 1 : -1
+        if(items[a].updated_at && items[b].updated_at) {
+          return (items[a].updated_at.seconds < items[b].updated_at.seconds) ? 1 : -1
         }
-      });
-
-      // 現在のページindexから、何件分のアイテムを表示するか決定
-      let itemCount = array.length
-      let start = this.pageSetting.index * this.pageSetting.interval - this.pageSetting.interval
-      let end = this.pageSetting.index * this.pageSetting.interval - 1
-      if(itemCount < end){
-        end = itemCount
+      }.bind(this))
+      for (const item of array) {
+        sortedItems[item] = items[item]
       }
-
-      for (let i = start; i < end; i++) {
-        sorted[array[i]] = t.items[array[i]];
-      }
-      return sorted
-    },
-    getPageIndex(){
-      return Math.ceil(Object.keys(this.items).length/this.pageSetting.interval)
+      return sortedItems
     }
   },
-  mounted(){
-    this.refresh()
-    this.init()
+  async mounted(){
+    await this.getNoticeList()
+    this.watchNoticeList()
+    // this.refresh()
+    // this.init()
   }
 }
 </script>

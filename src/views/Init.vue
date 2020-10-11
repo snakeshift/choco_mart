@@ -48,8 +48,10 @@ export default {
         userRef.set({
           updated_at: CURRENT_TIME(),
           created_at: CURRENT_TIME(),
-          name: "名も無き冒険者",
-          icon: Math.floor( Math.random() * (37 + 1 - 1) ) + 1
+          name: '名も無き冒険者',
+          icon: Math.floor( Math.random() * (37 + 1 - 1) ) + 1,
+          admin: false,
+          isBan: false
         })
         // 初期設定(売る)
         sellRef.set({
