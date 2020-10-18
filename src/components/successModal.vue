@@ -5,9 +5,9 @@
     width="90%"
   >
     <div class="modal-choco">
-      <div class="head text-choco pl-2 body-2">alert</div>
+      <div class="head text-choco pl-2 body-2">info</div>
       <div class="body text-choco-dark pa-2 mt-3 text-center">
-        <img src="@/assets/imgs/piramon_error.png" class="piramon_error">
+        <img src="@/assets/imgs/piramon_success.png" class="piramon_success">
         <div class="statusMsg" v-html="statusMsg"></div>
       </div>
       <div class="footer">
@@ -33,20 +33,20 @@ export default {
   },
   methods: {
     ...mapMutations('modal', [
-      'setIsShowError'
+      'setIsShowSuccess'
     ])
   },
   computed: {
     ...mapGetters({
-      isShowError: 'modal/isShowError',
+      isShowSuccess: 'modal/isShowSuccess',
       statusMsg: 'modal/statusMsg',
     }),
     isShow: {
       get() {
-        return this.isShowError
+        return this.isShowSuccess
       },
       set(value) {
-        this.setIsShowError(value)
+        this.setIsShowSuccess(value)
       }
     }
   },
@@ -54,7 +54,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.piramon_error{
+.piramon_success{
   text-align: center;
   width: 50%;
   max-width: 170px;

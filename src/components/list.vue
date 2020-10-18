@@ -78,7 +78,7 @@
         @click="checkSearch()"
       >
         <v-icon dark v-if="search.isSearched">mdi-cancel</v-icon>
-        <v-icon dark v-else>mdi-comment-search-outline</v-icon>
+        <v-icon dark v-else>mdi-text-search</v-icon>
       </v-btn>
     </div>
   </div>

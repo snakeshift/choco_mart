@@ -1,0 +1,15 @@
+{
+  "name": "Demo Web Push",
+  "short_name": "Demo Web Push",
+  "start_url": "/",
+  "display": "browser",
+  "orientation": "portrait",
+  "background_color": "#3E4EB8",
+  "theme_color": "#2F3BA2",
+  "icons": [{
+    "src": "mohu.png",
+    "sizes": "128x128",
+    "type": "image/png"
+  }],
+  "gcm_sender_id": "103953800507"
+}

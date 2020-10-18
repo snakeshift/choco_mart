@@ -14,6 +14,7 @@ import loading from '@/components/loading.vue'
 import { mapGetters, mapMutations, mapActions } from 'vuex'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME } from '@/config/firebase/util'
+import { MAX_BUY, MAX_SELL, MAX_ICON_NUM } from '@/config/setting'
 
 export default {
   name: 'Init',
@@ -49,17 +50,17 @@ export default {
           updated_at: CURRENT_TIME(),
           created_at: CURRENT_TIME(),
           name: '名も無き冒険者',
-          icon: Math.floor( Math.random() * (37 + 1 - 1) ) + 1,
+          icon: Math.floor( Math.random() * (MAX_ICON_NUM + 1 - 1) ) + 1,
           admin: false,
           isBan: false
         })
         // 初期設定(売る)
         sellRef.set({
-          count: 15,
+          count: MAX_SELL,
         })
         // 初期設定(売る)
         buyRef.set({
-          count: 15,
+          count: MAX_BUY,
         })
         // 初期設定(通知)
         noticeRef.set({

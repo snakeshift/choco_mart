@@ -11,7 +11,9 @@ const config = {
   messagingSenderId: "779047029524",
   appId: "1:779047029524:web:c37d738044284f727b5001",
   measurementId: "G-2PDBMYBW5Z"
-};
+}
+
+const VAPID_KEY = 'BCDw3v7pzwp3ybMscHQoAMeZ0qEVPNxR6lBXt4_IeUOthODzfpXVsmhNwPgxKMUx9B0LfX6k5EE_HEaCVngFGW4'
 
 export default {
   init() {
@@ -24,6 +26,9 @@ export default {
   },
   logout() {
     firebase.auth().signOut();
+  },
+  getVapidKey() {
+    return VAPID_KEY
   },
   async onAuth() {
     let userData = await this.signInAnonymously()

@@ -22,8 +22,7 @@ export default {
   name: 'App',
   components: {
   },
-  created () {
-  },
+  created () {},
   data: () => ({
     //
   }),

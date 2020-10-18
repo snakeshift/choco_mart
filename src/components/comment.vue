@@ -36,7 +36,7 @@
             </v-avatar>
             <div>
               <div class="fukidasi">
-                <p v-html="content.msg" class="text-normal"></p>
+                <p v-html="$sanitize(content.msg)" class="text-normal"></p>
                 <p class="member_name">{{members[content.uid] ? members[content.uid]["name"] : ""}}</p>
               </div>
               <p class="msg_time">{{getFormatedDate(content.created_at)}}</p>
@@ -199,6 +199,7 @@
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { TYPE, TYPE_TEXT, TALK_TYPE, TYPE_COLOR, TYPE_TEXT_SHORT, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF } from '@/config/firebase/ref'
+import { MAX_FAVORITE } from '@/config/setting'
 import firebase from 'firebase'
 import '@/assets/scss/components/chat.scss'
 
@@ -241,6 +242,10 @@ export default {
       'setIsLoading',
       'setStatusMsg'
     ]),
+    ...mapMutations({
+      setIsShowError: 'modal/setIsShowError',
+      setModalStatusMsg: 'modal/setStatusMsg'
+    }),
     tableScroll() {
       this.scrollTo(this.$refs.comment_table, 'bottom', 600)
     },
@@ -259,14 +264,20 @@ export default {
       this.reply = []
     },
     async plusGood(){
-      if(!this.canGood) return
+      if (!this.canGood) return
+      if (Object.keys(this.notices).length >= this.MAX_FAVORITE) {
+        this.setIsShowError(true)
+        this.setModalStatusMsg(`お気に入りに登録できるのは${this.MAX_FAVORITE}件までです。`)
+        return
+      }
+
       this.canGood = false
       await this.registerGood({kind: this.kind, itemId: this.itemId})
       await this.refreshNotice()
       this.canGood = true
     },
     async minusGood(){
-      if(!this.canGood) return
+      if (!this.canGood) return
       this.canGood = false
       await this.removeGood({kind: this.kind, itemId: this.itemId})
       await this.refreshNotice()
@@ -344,7 +355,6 @@ export default {
     async setIcon(iconNo){
       await this.updateIcon({icon: iconNo})
       this.getTalkMemberList()
-      // await this.refresh(this.itemId)
       this.iconSelect.isShow = false
     }
   },
@@ -355,11 +365,13 @@ export default {
     COMMENT_TYPE: () => COMMENT_TYPE,
     TYPE_COLOR: () => TYPE_COLOR,
     TYPE_TEXT_SHORT: () => TYPE_TEXT_SHORT,
+    MAX_FAVORITE: () => MAX_FAVORITE,
     ...mapGetters({
       user: 'auth/user',
       comments: 'firebase/commentList',
       members: 'firebase/talkMemberList',
       userItems: 'firebase/talkMemberTradeList',
+      notices: 'firebase/noticeList'
     }),
   },
   mounted(){}

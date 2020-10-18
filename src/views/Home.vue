@@ -92,13 +92,14 @@
     </v-row>
     <loading />
     <errorModal />
+    <successModal />
   </div>
 </template>
 
 <script>
+import firebase from 'firebase'
 import firebaseConfig from '@/plugins/firebase'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
-import firebase from 'firebase'
 import store from '@/store'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME } from '@/config/firebase/util'
@@ -112,6 +113,7 @@ import mypage from '@/components/mypage.vue'
 import comment from '@/components/comment.vue'
 import loading from '@/components/loading.vue'
 import errorModal from '@/components/errorModal.vue'
+import successModal from '@/components/successModal.vue'
 
 export default {
   name: 'Home',
@@ -123,7 +125,8 @@ export default {
     mypage,
     comment,
     loading,
-    errorModal
+    errorModal,
+    successModal
   },
   data () {
     return {
@@ -209,10 +212,59 @@ export default {
         this.resetBadge({type: 'notices'})
       }
     },
+    async checkPushPermission() {
+      const userRef = USER_REF().doc(this.user.uid)
+      const messaging = firebase.messaging()
+      Notification.requestPermission()
+        .then(permission => {
+          return messaging.getToken()
+        })
+        .then(token => {
+          userRef.update({
+            token
+          })
+          this.setIsShowSuccess(true)
+          this.setModalStatusMsg(`お気に入りタブに登録することで<br>プッシュ通知を受け取れます。`)
+        })
+        .catch(err => {
+          this.setIsShowError(true)
+          this.setModalStatusMsg(`書き込み通知を受け取りたい場合は<br>通知を許可してください。`)
+        })
+    },
+    // メッセージを受け取り時
+    async watchPushMessage() {
+      const messaging = firebase.messaging()
+      messaging.onMessage(function(payload) {
+        const title = payload.notification.title
+        const options = {
+          body: payload.notification.body,
+          icon: payload.notification.icon
+        };
+        const notification = new Notification(title, options)
+
+      })
+    },
+    // トークン更新時
+    async watchRefreshToken() {
+      const userRef = USER_REF().doc(this.user.uid)
+      const messaging = firebase.messaging()
+      messaging.onTokenRefresh(function() {
+        messaging.getToken().then(function(token) {
+          userRef.update({
+            token
+          })
+        })
+      })
+    },
     ...mapMutations('loading', [
       'setIsLoading',
       'setStatusMsg'
     ]),
+    ...mapMutations({
+      setIsShowError: 'modal/setIsShowError',
+      setIsShowSuccess: 'modal/setIsShowSuccess',
+      setModalStatusMsg: 'modal/setStatusMsg'
+    }),
     ...mapMutations('auth', [
       'setUserInfo'
     ]),
@@ -228,8 +280,17 @@ export default {
     await this.getUserAnonymously()
 
     const userRef = USER_REF().doc(this.user.uid)
-    await userRef.get().then(function(doc) {
+    await userRef.get().then(async function(doc) {
       if(doc.exists) {
+
+        // fcmが許可されているブラウザの場合
+        if (firebase.messaging.isSupported()) {
+          const token = doc.data().token
+          if (!token) await this.checkPushPermission()
+          this.watchPushMessage()
+          this.watchRefreshToken()
+        }
+
         userRef.update({
           updated_at: CURRENT_TIME()
         })

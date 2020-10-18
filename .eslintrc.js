@@ -1,6 +1,7 @@
 module.exports = {
   root: true,
   env: {
+    serviceworker: true,
     node: true
   },
   'extends': [

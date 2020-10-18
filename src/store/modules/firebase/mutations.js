@@ -51,8 +51,11 @@ export default {
     Vue.delete(state.listeners[payload.type], payload.id)
     Vue.delete(state.notices, payload.id)
   },
-  setBadge(state, payload) {
-    state.badges[payload.type] += 0.5 // timeStampの更新がサーバー側で行われるため、2回で1カウント
+  plusBadge(state, payload) {
+    state.badges[payload.type]++
+  },
+  minusBadge(state, payload) {
+    state.badges[payload.type]--
   },
   resetBadge(state, payload) {
     state.badges[payload.type] = 0

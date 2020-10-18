@@ -104,7 +104,8 @@ export default {
       type: TYPE.BUY,
       reply: 1,
       updated_at: CURRENT_TIME(),
-      created_at: CURRENT_TIME()
+      created_at: CURRENT_TIME(),
+      last_updated_by: rootGetters['auth/user'].uid
     }
     // コメント構造
     const commentData = {
@@ -159,7 +160,8 @@ export default {
     const itemData = {
       reply: INCREMENT(1),
       status: STATUS.FINISH,
-      updated_at: CURRENT_TIME()
+      updated_at: CURRENT_TIME(),
+      last_updated_by: rootGetters['auth/user'].uid
     }
     // コメント構造
     const commentData = {
@@ -206,7 +208,8 @@ export default {
     const itemData = {
       price: newPrice,
       updated_at: CURRENT_TIME(),
-      reply: INCREMENT(1)
+      reply: INCREMENT(1),
+      last_updated_by: rootGetters['auth/user'].uid
     }
 
     const commentData = {
@@ -332,7 +335,8 @@ export default {
       type: TYPE.SELL,
       reply: 1,
       updated_at: CURRENT_TIME(),
-      created_at: CURRENT_TIME()
+      created_at: CURRENT_TIME(),
+      last_updated_by: rootGetters['auth/user'].uid
     }
     // コメント構造
     const commentData = {
@@ -387,7 +391,8 @@ export default {
     const itemData = {
       reply: INCREMENT(1),
       status: STATUS.FINISH,
-      updated_at: CURRENT_TIME()
+      updated_at: CURRENT_TIME(),
+      last_updated_by: rootGetters['auth/user'].uid
     }
     // コメント構造
     const commentData = {
@@ -435,7 +440,8 @@ export default {
     const itemData = {
       price: newPrice,
       updated_at: CURRENT_TIME(),
-      reply: INCREMENT(1)
+      reply: INCREMENT(1),
+      last_updated_by: rootGetters['auth/user'].uid
     }
 
     const commentData = {
@@ -561,7 +567,8 @@ export default {
       type,
       reply: 1,
       updated_at: CURRENT_TIME(),
-      created_at: CURRENT_TIME()
+      created_at: CURRENT_TIME(),
+      last_updated_by: rootGetters['auth/user'].uid
     }
 
     // コメント構造
@@ -690,10 +697,11 @@ export default {
     const talkOrListRef = kind === COMMENT_TYPE.LIST
       ? LIST_REF().doc(itemId)
       : TALK_REF().doc(itemId)
-    
+
     const commentData = {
       updated_at: CURRENT_TIME(),
-      good: INCREMENT(1)
+      good: INCREMENT(1),
+      pushUserList: ARRAY_UNION(rootGetters['auth/user'].uid)
     }
     await noticeRef.update({
       items: ARRAY_UNION(talkOrListRef)
@@ -710,10 +718,11 @@ export default {
     const talkOrListRef = kind === COMMENT_TYPE.LIST
       ? LIST_REF().doc(itemId)
       : TALK_REF().doc(itemId)
-    
+
     const commentData = {
       updated_at: CURRENT_TIME(),
-      good: INCREMENT(-1)
+      good: INCREMENT(-1),
+      pushUserList: ARRAY_REMOVE(rootGetters['auth/user'].uid)
     }
     await noticeRef.update({
       items: ARRAY_REMOVE(talkOrListRef)
@@ -739,7 +748,8 @@ export default {
     }
     const itemData = {
       updated_at: CURRENT_TIME(),
-      reply: INCREMENT(1)
+      reply: INCREMENT(1),
+      last_updated_by: rootGetters['auth/user'].uid
     }
 
     const promises = [
@@ -790,8 +800,7 @@ export default {
       for(const data of items){
         const id = data.value.data().id
         const kind = 'price' in data.value.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
-        dispatch('setNoticeListener', { id, kind })
-        commit('setBadge', { type: 'notices' })
+        dispatch('setNoticeListener', { id, kind, isInit: true })
       }
     })
   },
@@ -799,6 +808,7 @@ export default {
   // お気に入りの各itemの監視
   async setNoticeListener ({ dispatch, commit, getters, rootGetters }, payload) {
     const {id, kind} = {...payload}
+    let {isInit} = {...payload}
     const talkOrListRef = kind === COMMENT_TYPE.LIST
       ? LIST_REF().doc(id)
       : TALK_REF().doc(id)
@@ -807,7 +817,11 @@ export default {
       const id = querySnapshot.data().id
       const item = querySnapshot.data()
       commit('setNoticeList', { id, item })
-      commit('setBadge', { type: 'notices' })
+      if (item.last_updated_by !== rootGetters['auth/user'].uid && !isInit) {
+        commit('plusBadge', { type: 'notices' })
+      } else {
+        isInit = false // Good以降は反応するように
+      }
     })
     // リスナー停止用にstoreにセット
     commit('setListenerList', {type: 'notices', id, unsubscribe })
@@ -825,8 +839,7 @@ export default {
           const data = await item.get()
           const id = data.data().id
           const kind = 'price' in data.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
-          dispatch('setNoticeListener', {id, kind})
-          commit('setBadge', { type: 'notices' })
+          dispatch('setNoticeListener', {id, kind, isInit: true})
         }
       })
       // 減っているか判別

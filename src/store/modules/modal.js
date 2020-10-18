@@ -2,11 +2,15 @@ export default {
   namespaced: true,
   state: {
     isShowError: false,
-    statusMsg: 'データの更新に失敗しました'
+    isShowSuccess: false,
+    statusMsg: ''
   },
   getters: {
     isShowError(state) {
       return state.isShowError
+    },
+    isShowSuccess(state) {
+      return state.isShowSuccess
     },
     statusMsg(state) {
       return state.statusMsg
@@ -15,6 +19,9 @@ export default {
   mutations: {
     setIsShowError(state, isShowError) {
       state.isShowError = isShowError
+    },
+    setIsShowSuccess(state, isShowSuccess) {
+      state.isShowSuccess = isShowSuccess
     },
     setStatusMsg(state, msg) {
       state.statusMsg = msg
