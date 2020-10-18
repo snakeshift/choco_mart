@@ -117,6 +117,7 @@ export default {
           created_at: now
         }
       ],
+      pushUserList: [],
       good: 0,
       created_at: CURRENT_TIME(),
       updated_at: CURRENT_TIME()
@@ -348,6 +349,7 @@ export default {
           created_at: now
         }
       ],
+      pushUserList: [],
       good: 0,
       created_at: CURRENT_TIME(),
       updated_at: CURRENT_TIME()
@@ -581,6 +583,7 @@ export default {
           created_at: now
         }
       ],
+      pushUserList: [],
       good: 0,
       created_at: CURRENT_TIME(),
       updated_at: CURRENT_TIME()

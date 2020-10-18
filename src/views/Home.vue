@@ -22,8 +22,10 @@
                 </v-col>
               </v-row>
             </div>
-            <!-- <div class="morico"></div> -->
-            <div class="morico" @click="logout()"></div>
+            <div class="morico">
+              <span>初めての方へ</span>
+            </div>
+            <!-- <div class="morico" @click="logout()"></div> -->
           </div>
         </div>
         <div class="tab-choco">
@@ -93,6 +95,7 @@
     <loading />
     <errorModal />
     <successModal />
+    <howToUse />
   </div>
 </template>
 
@@ -114,6 +117,7 @@ import comment from '@/components/comment.vue'
 import loading from '@/components/loading.vue'
 import errorModal from '@/components/errorModal.vue'
 import successModal from '@/components/successModal.vue'
+import howToUse from '@/components/howToUse.vue'
 
 export default {
   name: 'Home',
@@ -126,7 +130,8 @@ export default {
     comment,
     loading,
     errorModal,
-    successModal
+    successModal,
+    howToUse
   },
   data () {
     return {
@@ -324,6 +329,18 @@ export default {
   height: 70px;
   bottom: -10px;
   right: 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  span {
+    font-family: 'choco' !important;
+    font-size: 12px;
+    color: $base_color_4;
+    text-shadow:1px 1px 0 #FFF, -1px -1px 0 #FFF,
+                -1px 1px 0 #FFF, 1px -1px 0 #FFF,
+                0px 1px 0 #FFF,  0-1px 0 #FFF,
+                -1px 0 0 #FFF, 1px 0 0 #FFF;
+  }
 }
 .choco-mart{
   height: 100%;
