@@ -22,7 +22,7 @@
                 </v-col>
               </v-row>
             </div>
-            <div class="morico">
+            <div class="morico pointer" @click="openHowToUse()">
               <span>初めての方へ</span>
             </div>
             <!-- <div class="morico" @click="logout()"></div> -->
@@ -95,7 +95,7 @@
     <loading />
     <errorModal />
     <successModal />
-    <howToUse />
+    <howToUse ref="howToUse" />
   </div>
 </template>
 
@@ -176,6 +176,9 @@ export default {
     },
     logout() {
       firebaseConfig.logout()
+    },
+    openHowToUse() {
+      this.$refs.howToUse.isShow = true
     },
     async showReply(itemId, kind) {
       this.setIsLoading(true)
