@@ -78,6 +78,11 @@ const STATUS_TEXT = {
     [STATUS.FINISH]: '終了'
   }
 }
+const TARGET_OS = {
+  BOTH: 0,
+  PC: 1,
+  SP: 2
+}
 
 export {
   TYPE,
@@ -90,5 +95,6 @@ export {
   TALK_TYPE_COLOR,
   COMMENT_TYPE,
   STATUS,
-  STATUS_TEXT
+  STATUS_TEXT,
+  TARGET_OS
 }

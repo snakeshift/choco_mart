@@ -67,12 +67,38 @@
         max-width="300"
         width="90%"
       >
-        <div class="modal-choco" style="height: 200px;">
+        <div class="modal-choco" style="height: 210px;">
           <div class="head text-choco pl-2 body-2">
             {{dialog.title}}
           </div>
           <div class="body text-choco-dark pa-2">
             <p v-html="dialog.content"></p>
+            <div v-if="dialog.target.isShow" class="d-flex align-center justify-space-around" >
+              <v-chip
+                dark
+                :color="dialog.target.value === TARGET_OS.BOTH ? 'light-green' : ''"
+                class="chip d-inline-block"
+                @click="dialog.target.value = TARGET_OS.BOTH"
+              >
+                SP/PC可能
+              </v-chip>
+              <v-chip
+                dark
+                :color="dialog.target.value === TARGET_OS.PC ? 'amber' : ''"
+                class="chip d-inline-block"
+                @click="dialog.target.value = TARGET_OS.PC"
+              >
+                PCのみ
+              </v-chip>
+              <v-chip
+                dark
+                :color="dialog.target.value === TARGET_OS.SP ? 'cyan' : ''"
+                class="chip d-inline-block"
+                @click="dialog.target.value = TARGET_OS.SP"
+              >
+                SPのみ
+              </v-chip>
+            </div>
           </div>
           <div class="footer">
             <v-btn
@@ -99,7 +125,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
-import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
+import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE, TARGET_OS } from '@/config/library'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
@@ -122,6 +148,10 @@ export default {
             func(){}
           }
         },
+        target: {
+          isShow: false,
+          value: 0
+        }
       },
       count: 0
     }
@@ -135,6 +165,7 @@ export default {
             this.dialog.content = `
               <p>求める装備名、価格を正しく入力してください。</p>
             `
+            this.dialog.target.isShow = false
             this.dialog.button.positive.isShow = false
             this.dialog.button.negative.isShow = true
             this.dialog.button.negative.func = () => {
@@ -142,15 +173,16 @@ export default {
             }
           }else{
             this.dialog.content = `
-              【${item.name}】を${item.price}<br>で求めます。よろしいですか?
+              【${item.name}】を${item.price}<br>で求めます。取引場所を選択してください。
             `
+            this.dialog.target.isShow = true
             this.dialog.button.positive.isShow = true
             this.dialog.button.negative.isShow = true
 
             this.dialog.button.positive.func = async () => {
               this.dialog.button.loading = true
               this.dialog.button.positive.isClicked = true
-              await this.registerBuyList({item, index})
+              await this.registerBuyList({item, index, target: this.dialog.target.value})
               this.dialog.isShow = false
               this.dialog.button.positive.isClicked = false
               this.dialog.button.loading = false
@@ -170,6 +202,7 @@ export default {
           `
           this.dialog.button.positive.isShow = true
           this.dialog.button.negative.isShow = true
+          this.dialog.target.isShow = false
 
           this.dialog.button.positive.func = async () => {
             this.dialog.button.loading = true
@@ -199,6 +232,7 @@ export default {
           <input type="text" id="newPrice" class="text-choco-dark" value=${item.price} maxlength="10">
         </div>
       `
+      this.dialog.target.isShow = false
       this.dialog.button.positive.isShow = true
       this.dialog.button.negative.isShow = true
       this.dialog.button.positive.func = async () => {
@@ -227,6 +261,7 @@ export default {
     STATUS: () => STATUS,
     STATUS_TEXT: () => STATUS_TEXT,
     COMMENT_TYPE: () => COMMENT_TYPE,
+    TARGET_OS: () => TARGET_OS,
     ...mapGetters({
       user: 'auth/user',
       items: 'firebase/buyList'

@@ -1,6 +1,6 @@
 import firebase from 'firebase'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF, COUNT_REF } from '@/config/firebase/ref'
-import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
+import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE, TARGET_OS } from '@/config/library'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION, ARRAY_REMOVE } from '@/config/firebase/util'
 
 export default {
@@ -25,6 +25,7 @@ export default {
         name: newData.name,
         price: newData.price,
         reply: newData.reply,
+        updated_at: newData.updated_at
       }
       commit('setBuyList', { index, item })
 
@@ -46,7 +47,11 @@ export default {
           status: STATUS.NOT_RECRUITING,
           name: '',
           price: '',
-          reply: 0
+          reply: 0,
+          updated_at: {
+            nanoseconds: 0,
+            seconds: 0
+          }
         }
         commit('setBuyList', { index: i, item })
       }
@@ -76,7 +81,8 @@ export default {
           status: data.value.data().status,
           name: data.value.data().name,
           price: data.value.data().price,
-          reply: data.value.data().reply
+          reply: data.value.data().reply,
+          updated_at: data.value.data().updated_at
         }
         commit('setBuyList', { index, item })
         dispatch('setBuyListListener', {id: item.id, index})
@@ -85,7 +91,7 @@ export default {
   },
   // 新規登録
   async registerBuyList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const {item, index} = {...payload}
+    const {item, index, target} = {...payload}
 
     const itemId = LIST_REF().doc().id
     const now = Math.floor( new Date().getTime() / 1000 )
@@ -93,6 +99,8 @@ export default {
     const buyRef = BUY_REF().doc(rootGetters['auth/user'].uid)
     const listRef = LIST_REF().doc(itemId)
     const commentRef = COMMENT_REF().doc(itemId)
+
+    const targetOs = target === TARGET_OS.BOTH ? '【SP/PC可能】' : target === TARGET_OS.SP ? '【SPのみ】' : '【PCのみ】'
 
     // 商品データ
     const itemData = {
@@ -113,7 +121,7 @@ export default {
       reply: [
         {
           uid: rootGetters['auth/user'].uid,
-          msg: '取引を開始しました。',
+          msg: `${targetOs}\n  取引を開始しました。`,
           created_at: now
         }
       ],
@@ -257,6 +265,7 @@ export default {
         name: newData.name,
         price: newData.price,
         reply: newData.reply,
+        updated_at: newData.updated_at
       }
       commit('setSellList', { index, item })
 
@@ -278,7 +287,11 @@ export default {
           status: STATUS.NOT_RECRUITING,
           name: '',
           price: '',
-          reply: 0
+          reply: 0,
+          updated_at: {
+            nanoseconds: 0,
+            seconds: 0
+          }
         }
         commit('setSellList', { index: i, item })
       }
@@ -308,7 +321,8 @@ export default {
           status: data.value.data().status,
           name: data.value.data().name,
           price: data.value.data().price,
-          reply: data.value.data().reply
+          reply: data.value.data().reply,
+          updated_at: data.value.data().updated_at
         }
         commit('setSellList', { index, item })
         dispatch('setSellListListener', {id: item.id, index})
@@ -317,7 +331,7 @@ export default {
   },
   // 新規登録
   async registerSellList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const {item, index} = {...payload}
+    const {item, index, target} = {...payload}
 
     const itemId = LIST_REF().doc().id
     const now = Math.floor( new Date().getTime() / 1000 )
@@ -325,6 +339,8 @@ export default {
     const sellRef = SELL_REF().doc(rootGetters['auth/user'].uid)
     const listRef = LIST_REF().doc(itemId)
     const commentRef = COMMENT_REF().doc(itemId)
+
+    const targetOs = target === TARGET_OS.BOTH ? '【SP/PC可能】' : target === TARGET_OS.SP ? '【SPのみ】' : '【PCのみ】'
 
     // 商品データ
     const itemData = {
@@ -345,7 +361,7 @@ export default {
       reply: [
         {
           uid: rootGetters['auth/user'].uid,
-          msg: '取引を開始しました。',
+          msg: `${targetOs}\n  取引を開始しました。`,
           created_at: now
         }
       ],
