@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.14fd42b2f340a42350d1a9b2c0e62f2b.js"
+  "/precache-manifest.e4e5c4c57530922fdb0d95218e1da29f.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "chocottoland"});
