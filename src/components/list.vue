@@ -5,7 +5,19 @@
         <table class="item-table-choco back-choco" cellspacing="0" ref="content_table">
           <thead>
             <tr class="item-th-choco text-choco body-2">
-              <th>装備名</th>
+              <th class="pos-rel">
+                <v-chip
+                  dark
+                  x-small
+                  class="sort-type"
+                  :color="TYPE_COLOR[sort.selectedType]"
+                  text-color="#FFFFFF"
+                  @click="changeSortType"
+                >
+                  {{ SORT_TYPE[sort.selectedType].label }}
+                </v-chip>
+                <span>装備名</span>
+              </th>
               <th>価格</th>
               <th>返</th>
             </tr>
@@ -115,6 +127,9 @@ export default {
         isSearched: false,
         loading: false
       },
+      sort: {
+        selectedType: 0
+      },
       limit: 20,
     }
   },
@@ -158,6 +173,9 @@ export default {
         this.search.isShow = true
       }
     },
+    changeSortType() {
+      this.sort.selectedType = this.sort.selectedType === TYPE.SELL ? 0 : this.sort.selectedType + 1
+    },
     ...mapActions('firebase', ['getList', 'getListBySearch', 'setListListener', 'setListCountListener']),
     ...mapMutations('loading', [
       'setIsLoading',
@@ -178,15 +196,54 @@ export default {
       counts: 'firebase/count',
       isLoading: 'loading/isLoading',
     }),
+    SORT_TYPE() {
+      return {
+        0: {
+          label: 'All'
+        },
+        [this.TYPE.BUY]: {
+          label: this.TYPE_TEXT_SHORT[this.TYPE.BUY]
+        },
+        [this.TYPE.SELL]: {
+          label: this.TYPE_TEXT_SHORT[this.TYPE.SELL]
+        }
+      }
+    },
     sortedItems() {
       const sortedItems = {}
       const array = []
       const items = this.search.isSearched ? this.searchItems : this.items
       for (const key in items) { array.push(key)}
       array.sort(function(a,b){
-        if(items[a].updated_at && items[b].updated_at) {
-          return (items[a].updated_at.seconds < items[b].updated_at.seconds) ? 1 : -1
+        // 種別で比較する
+        if (this.sort.selectedType === this.TYPE.SELL) {
+          if(items[a].type < items[b].type) return 1
+          if(items[a].type > items[b].type) return -1
+        } else if (this.sort.selectedType === this.TYPE.BUY) {
+          if(items[a].type > items[b].type) return 1
+          if(items[a].type < items[b].type) return -1
         }
+
+        // ステータスで比較する
+        if (items[a].status > items[b].status) return 1
+        if (items[a].status < items[b].status) return -1
+
+        // 更新日時で比較する
+        if (items[a].updated_at.seconds < items[b].updated_at.seconds) return 1
+        if (items[a].updated_at.seconds > items[b].updated_at.seconds) return -1
+        
+        // 会社名が同一の場合、次に「製品名」で比較する
+        // if(a.name < b.name) return -1;
+        // if(a.name > b.name) return  1;
+
+
+        // if(items[a].updated_at && items[b].updated_at) {
+        //   return (items[a].updated_at.seconds < items[b].updated_at.seconds) ? 1 : -1
+        // }
+        // if(items[a].type !== this.sort.selectedType) {
+        //   return -1
+        // }
+        return 0
       }.bind(this))
       for (const item of array) {
         sortedItems[item] = items[item]
@@ -227,6 +284,18 @@ export default {
         width: 2rem;
       }
     }
+  }
+  .sort-type {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 4px;
+    width: 32px;
+    // text-align: center;
+    justify-content: center;
+    cursor: pointer;
   }
 }
 </style>
