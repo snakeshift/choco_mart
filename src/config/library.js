@@ -57,11 +57,11 @@ const TALK_TYPE_SELECT = [
 const TALK_TYPE_TEXT_SHORT = {
   [TALK_TYPE.CHAT]: '雑',
   [TALK_TYPE.QUESTION]: '質',
-  [TALK_TYPE.PET]: 'ぺ',
+  [TALK_TYPE.PET]: '獣',
   [TALK_TYPE.OTHER]: '他'
 }
 const TALK_TYPE_COLOR = {
-  [TALK_TYPE.CHAT]: '#193B5A',
+  [TALK_TYPE.CHAT]: 'indigo',
   [TALK_TYPE.QUESTION]: '#206574',
   [TALK_TYPE.PET]: '#669F6A',
   [TALK_TYPE.OTHER]: 'blue-grey'

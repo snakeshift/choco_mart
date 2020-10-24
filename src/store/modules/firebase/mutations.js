@@ -20,6 +20,9 @@ export default {
       Vue.set(state.lists, payload.id, payload.item)
     }
   },
+  resetList(state, payload) {
+    state.lists = {}
+  },
   setListBySearch(state, payload) {
     Vue.set(state.searches, payload.id, payload.item)
   },

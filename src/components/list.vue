@@ -5,7 +5,19 @@
         <table class="item-table-choco back-choco" cellspacing="0" ref="content_table">
           <thead>
             <tr class="item-th-choco text-choco body-2">
-              <th>装備名</th>
+              <th class="pos-rel">
+                <v-chip
+                  dark
+                  x-small
+                  class="sort-type"
+                  :color="TYPE_COLOR[filter]"
+                  text-color="#FFFFFF"
+                  @click="changeFilter"
+                >
+                  {{ SORT_TYPE[filter].label }}
+                </v-chip>
+                <span>装備名</span>
+              </th>
               <th>価格</th>
               <th>返</th>
             </tr>
@@ -115,6 +127,7 @@ export default {
         isSearched: false,
         loading: false
       },
+      filter: 0,
       limit: 20,
     }
   },
@@ -136,7 +149,7 @@ export default {
             this.setIsLoading(true)
             this.setStatusMsg('更新中..')
             await new Promise(r => setTimeout(r, 1000))
-            await this.getList({limit: this.limit, lastUpdatedAt})
+            await this.getList({limit: this.limit, lastUpdatedAt, filter: this.filter})
             this.setIsLoading(false)
           }
         }
@@ -161,10 +174,22 @@ export default {
     tableScroll() {
       this.scrollTo(this.$refs.list_table, 'top', 300)
     },
+    async changeFilter() {
+      this.filter = this.filter === TYPE.SELL ? 0 : this.filter + 1
+      this.resetList()
+      this.setIsLoading(true)
+      this.setStatusMsg('切り替え中..')
+      await new Promise(r => setTimeout(r, 1000))
+      await this.getList({limit: this.limit, filter: this.filter})
+      this.setIsLoading(false)
+    },
     ...mapActions('firebase', ['getList', 'getListBySearch', 'setListListener', 'setListCountListener']),
     ...mapMutations('loading', [
       'setIsLoading',
       'setStatusMsg'
+    ]),
+    ...mapMutations('firebase', [
+      'resetList'
     ])
   },
   computed: {
@@ -181,6 +206,19 @@ export default {
       counts: 'firebase/count',
       isLoading: 'loading/isLoading',
     }),
+    SORT_TYPE() {
+      return {
+        0: {
+          label: 'All'
+        },
+        [this.TYPE.BUY]: {
+          label: this.TYPE_TEXT_SHORT[this.TYPE.BUY]
+        },
+        [this.TYPE.SELL]: {
+          label: this.TYPE_TEXT_SHORT[this.TYPE.SELL]
+        }
+      }
+    },
     sortedItems() {
       const sortedItems = {}
       const array = []
@@ -192,13 +230,14 @@ export default {
         }
       }.bind(this))
       for (const item of array) {
+        if (this.filter && items[item].type !== this.filter) continue
         sortedItems[item] = items[item]
       }
       return sortedItems
     }
   },
   mounted(){
-    this.getList({limit: this.limit})
+    this.getList({limit: this.limit, filter: this.filter})
     this.setListListener()
     this.setListCountListener()
     this.checkScroll()
@@ -230,6 +269,18 @@ export default {
         width: 2rem;
       }
     }
+  }
+  .sort-type {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 4px;
+    width: 32px;
+    // text-align: center;
+    justify-content: center;
+    cursor: pointer;
   }
 }
 </style>

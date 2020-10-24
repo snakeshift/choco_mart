@@ -489,10 +489,17 @@ export default {
 
   // リスト取得
   async getList ({ dispatch, commit, getters, rootGetters }, payload) {
-    const {limit, lastUpdatedAt} = {...payload}
-    const query = !lastUpdatedAt
-      ? LIST_REF().where('status','==',STATUS.UNDER_RECRUITING).orderBy('updated_at', 'desc').limit(limit)
-      : LIST_REF().where('status','==',STATUS.UNDER_RECRUITING).orderBy('updated_at', 'desc').startAt(lastUpdatedAt).limit(limit)
+    const {limit, lastUpdatedAt, filter} = {...payload}
+    let query
+    if (!filter) {
+      query = !lastUpdatedAt
+        ? LIST_REF().where('status','==',STATUS.UNDER_RECRUITING).orderBy('updated_at', 'desc').limit(limit)
+        : LIST_REF().where('status','==',STATUS.UNDER_RECRUITING).orderBy('updated_at', 'desc').startAt(lastUpdatedAt).limit(limit)
+    } else {
+      query = !lastUpdatedAt
+        ? LIST_REF().where('type','==',filter).where('status','==',STATUS.UNDER_RECRUITING).orderBy('updated_at', 'desc').limit(limit)
+        : LIST_REF().where('type','==',filter).where('status','==',STATUS.UNDER_RECRUITING).orderBy('updated_at', 'desc').startAt(lastUpdatedAt).limit(limit)
+    }
     await query.get().then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
         const id = doc.id
