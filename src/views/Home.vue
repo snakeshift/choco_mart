@@ -55,10 +55,10 @@
             <sell v-if="isLoaded" v-show="selected == TYPE.SELL && !isShow.comment" @showReply = showReply></sell>
           </transition>
           <transition name="slide-left">
-            <list v-if="isLoaded" v-show="selected == TYPE.LIST && !isShow.comment" @showReply = showReply></list>
+            <list v-if="isLoaded" v-show="selected == TYPE.LIST && !isShow.comment" ref="list" @showReply = showReply></list>
           </transition>
           <transition name="slide-left">
-            <talk v-if="isLoaded" v-show="selected == TYPE.TALK && !isShow.comment" @showReply = showReply></talk>
+            <talk v-if="isLoaded" v-show="selected == TYPE.TALK && !isShow.comment" ref="talk" @showReply = showReply></talk>
           </transition>
           <transition name="slide-left">
             <mypage v-if="isLoaded" v-show="selected == TYPE.MY_PAGE && !isShow.comment" @showReply = showReply></mypage>
@@ -213,12 +213,16 @@ export default {
       this.dialog.isShow = true
     },
     setTab(index) {
+      if (index == TYPE.MY_PAGE) {
+        this.resetBadge({type: 'notices'})
+      } else if (index == TYPE.LIST && this.selected === index) {
+        this.$refs.list.tableScroll()
+      } else if (index == TYPE.TALK && this.selected === index) {
+        this.$refs.talk.tableScroll()
+      }
       this.selected = index
       this.isShow.comment = false
       this.$refs.comment.closeListener()
-      if (index == TYPE.MY_PAGE) {
-        this.resetBadge({type: 'notices'})
-      }
     },
     async checkPushPermission() {
       const userRef = USER_REF().doc(this.user.uid)

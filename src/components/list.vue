@@ -158,6 +158,9 @@ export default {
         this.search.isShow = true
       }
     },
+    tableScroll() {
+      this.scrollTo(this.$refs.list_table, 'top', 300)
+    },
     ...mapActions('firebase', ['getList', 'getListBySearch', 'setListListener', 'setListCountListener']),
     ...mapMutations('loading', [
       'setIsLoading',

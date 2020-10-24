@@ -175,8 +175,8 @@ export default {
             お気に入り登録したスレッドに更新があった際はお知らせしてくれます。
           `,
           moricoTextList: [
-            'あまり気にしなくて大丈夫！大丈夫！',
-            '正しく使ってね！正しく使ってね！'
+            'あまり気にしなくても大丈夫！大丈夫！',
+            '分からなければ聞いてね！聞いてね！'
           ]
         }
       }
@@ -219,6 +219,7 @@ export default {
     height: 420px;
     overflow: visible;
     position: relative;
+    margin-top: -100px;
     .morico {
       width: 95px;
       position: absolute;

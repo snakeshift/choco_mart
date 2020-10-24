@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { STATUS } from '@/config/library'
 
 export default {
   setBuyList(state, payload) {
@@ -8,7 +9,16 @@ export default {
     Vue.set(state.sells, payload.index, payload.item)
   },
   setList(state, payload) {
-    Vue.set(state.lists, payload.id, payload.item)
+    // 終了したものがあれば (リアルタイム更新分のみが入ってくる想定)
+    if (payload.item.status === STATUS.FINISH) {
+      // 既に取得済のものはステータスだけ変更してあげる
+      if (state.lists[payload.id]) {
+        state.lists[payload.id].status = payload.item.status
+        state.lists[payload.id].reply = payload.item.reply
+      }
+    } else {
+      Vue.set(state.lists, payload.id, payload.item)
+    }
   },
   setListBySearch(state, payload) {
     Vue.set(state.searches, payload.id, payload.item)

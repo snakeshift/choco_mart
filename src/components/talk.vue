@@ -192,6 +192,9 @@ export default {
 
       this.scrollTo(this.$refs.talk_table, 'top', 100)
     },
+    tableScroll() {
+      this.scrollTo(this.$refs.talk_table, 'top', 300)
+    },
     ...mapActions('firebase', ['registerTalkList', 'getTalkList', 'setTalkListListener', 'setTalkListCountListener']),
     ...mapMutations('loading', [
       'setIsLoading',
