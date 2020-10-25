@@ -1,6 +1,7 @@
 import firebase from 'firebase'
+import nGram from 'n-gram'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF, COUNT_REF } from '@/config/firebase/ref'
-import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE, TARGET_OS } from '@/config/library'
+import { TYPE, TYPE_TEXT, STATUS, STATUS_TEXT, COMMENT_TYPE, TARGET_OS, SEARCH_TYPE } from '@/config/library'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION, ARRAY_REMOVE } from '@/config/firebase/util'
 
 export default {
@@ -113,7 +114,8 @@ export default {
       reply: 1,
       updated_at: CURRENT_TIME(),
       created_at: CURRENT_TIME(),
-      last_updated_by: rootGetters['auth/user'].uid
+      last_updated_by: rootGetters['auth/user'].uid,
+      dictionary: nGram.trigram(item.name)
     }
     // コメント構造
     const commentData = {
@@ -353,7 +355,8 @@ export default {
       reply: 1,
       updated_at: CURRENT_TIME(),
       created_at: CURRENT_TIME(),
-      last_updated_by: rootGetters['auth/user'].uid
+      last_updated_by: rootGetters['auth/user'].uid,
+      dictionary: nGram.trigram(item.name)
     }
     // コメント構造
     const commentData = {
@@ -509,16 +512,29 @@ export default {
     })
   },
   async getListBySearch ({ dispatch, commit, getters, rootGetters }, payload) {
-    const {title, limit} = {...payload}
-    const query = LIST_REF().orderBy('name').orderBy('updated_at', 'desc').startAt(title).endAt(title+'\uf8ff').limit(limit)
-    await query.get().then(function(querySnapshot) {
-      commit('resetListBySearch')
-      querySnapshot.forEach(function(doc) {
-        const id = doc.id
-        const item = doc.data()
-        commit('setListBySearch', { id, item })
+    const {title, limit, searchType} = {...payload}
+
+    if (searchType === SEARCH_TYPE.PARTIAL) {
+      const query = LIST_REF().where('dictionary', 'array-contains-any', nGram.trigram(title)).orderBy('updated_at', 'desc').limit(limit)
+      await query.get().then(function(querySnapshot) {
+        commit('resetListBySearch')
+        querySnapshot.forEach(function(doc) {
+          const id = doc.id
+          const item = doc.data()
+          commit('setListBySearch', { id, item })
+        })
       })
-    })
+    } else {
+      const query = LIST_REF().orderBy('name').orderBy('updated_at', 'desc').startAt(title).endAt(title+'\uf8ff').limit(limit)
+      await query.get().then(function(querySnapshot) {
+        commit('resetListBySearch')
+        querySnapshot.forEach(function(doc) {
+          const id = doc.id
+          const item = doc.data()
+          commit('setListBySearch', { id, item })
+        })
+      })
+    }
   },
   // 最新の1件をリアルタイム監視登録
   async setListListener ({ dispatch, commit, getters, rootGetters }, payload) {

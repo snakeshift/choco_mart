@@ -14,7 +14,7 @@
                   text-color="#FFFFFF"
                   @click="changeFilter"
                 >
-                  {{ SORT_TYPE[filter].label }}
+                  {{ FILTER_TYPE[filter].label }}
                 </v-chip>
                 <span>装備名</span>
               </th>
@@ -57,16 +57,35 @@
           max-width="300"
           width="90%"
         >
-          <div class="modal-choco" style="height: 200px;">
-            <div class="head text-choco pl-2 body-2">相場検索 (前方一致)</div>
-            <div class="body text-choco-dark pa-2 mt-3 modal-textarea-choco">
+          <div class="modal-choco" style="height: 220px;">
+            <div class="head text-choco pl-2 body-2">相場検索</div>
+            <v-radio-group v-model="search.type" row hide-details class="ml-2">
+              <v-radio
+                v-for="type in SEARCH_TYPE"
+                :key="type"
+                :label="SEARCH_TYPE_TEXT[type]"
+                :value="type"
+                color="#1E2E58"
+                class="text-choco"
+              ></v-radio>
+            </v-radio-group>
+            <div class="body text-choco-dark pa-3 mt-3 modal-textarea-choco">
               <v-text-field
-                label="装備名 (2文字以上)"
+                :label="SEARCH_TYPE_LABEL[search.type]"
                 v-model="search.title"
                 outlined
                 class="mb-4 text-choco-dark body"
                 hide-details
               ></v-text-field>
+            </div>
+            <div class="ml-3 text-choco-dark">
+              <span>検索精度</span>
+              <v-icon v-if="search.type === SEARCH_TYPE.PREFIX" color="accent">
+                mdi-arrow-up-thick
+              </v-icon>
+              <v-icon v-else color="primary">
+                mdi-arrow-down-thick
+              </v-icon>
             </div>
             <div class="footer">
               <v-btn color="primary" class="button-choco" dark @click="searchItem()" :loading="search.loading">
@@ -99,7 +118,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import firebase from 'firebase'
-import { TYPE, TYPE_TEXT, TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT, COMMENT_TYPE } from '@/config/library'
+import { TYPE, TYPE_TEXT, TYPE_COLOR, STATUS, STATUS_TEXT, TYPE_TEXT_SHORT, COMMENT_TYPE, SEARCH_TYPE, SEARCH_TYPE_TEXT } from '@/config/library'
 import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, COMMENT_REF } from '@/config/firebase/ref'
 import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION } from '@/config/firebase/util'
 
@@ -125,7 +144,8 @@ export default {
         title: '',
         isShow: false,
         isSearched: false,
-        loading: false
+        loading: false,
+        type: 1
       },
       filter: 0,
       limit: 20,
@@ -156,9 +176,10 @@ export default {
       }.bind(this))
     },
     async searchItem() {
-      if (this.search.title.length <= 1) return
+      if (this.search.type === SEARCH_TYPE.PREFIX && (this.search.title.length < 2 || this.search.title.length > 100)) return
+      if (this.search.type === SEARCH_TYPE.PARTIAL && (this.search.title.length < 3 || this.search.title.length > 12)) return
       this.search.loading = true
-      await this.getListBySearch({title: this.search.title, limit: 100})
+      await this.getListBySearch({title: this.search.title, limit: 100, searchType: this.search.type})
       this.search.isSearched = true
       this.search.isShow = false
       this.search.loading = false
@@ -199,6 +220,8 @@ export default {
     STATUS_TEXT: () => STATUS_TEXT,
     TYPE_TEXT_SHORT: () => TYPE_TEXT_SHORT,
     COMMENT_TYPE: () => COMMENT_TYPE,
+    SEARCH_TYPE: () => SEARCH_TYPE,
+    SEARCH_TYPE_TEXT: () => SEARCH_TYPE_TEXT,
     ...mapGetters({
       user: 'auth/user',
       items: 'firebase/list',
@@ -206,7 +229,7 @@ export default {
       counts: 'firebase/count',
       isLoading: 'loading/isLoading',
     }),
-    SORT_TYPE() {
+    FILTER_TYPE() {
       return {
         0: {
           label: 'All'
@@ -217,6 +240,12 @@ export default {
         [this.TYPE.SELL]: {
           label: this.TYPE_TEXT_SHORT[this.TYPE.SELL]
         }
+      }
+    },
+    SEARCH_TYPE_LABEL() {
+      return {
+        [SEARCH_TYPE.PREFIX]: '装備名 (先頭2文字以上)',
+        [SEARCH_TYPE.PARTIAL]: '装備名 (3-12文字以内)'
       }
     },
     sortedItems() {

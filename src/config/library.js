@@ -83,6 +83,14 @@ const TARGET_OS = {
   PC: 1,
   SP: 2
 }
+const SEARCH_TYPE = {
+  PREFIX: 1,
+  PARTIAL: 2
+}
+const SEARCH_TYPE_TEXT = {
+  [SEARCH_TYPE.PREFIX]: '前方一致',
+  [SEARCH_TYPE.PARTIAL]: '部分一致'
+}
 
 export {
   TYPE,
@@ -96,5 +104,7 @@ export {
   COMMENT_TYPE,
   STATUS,
   STATUS_TEXT,
-  TARGET_OS
+  TARGET_OS,
+  SEARCH_TYPE,
+  SEARCH_TYPE_TEXT
 }
