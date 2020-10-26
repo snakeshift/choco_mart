@@ -3,8 +3,13 @@
     <v-row justify="center" class="choco-mart">
       <v-card class="border-choco back-choco">
         <v-toolbar dark color="#1E2E58" height="30" class="border-initial">
-          <v-toolbar-title class="body-2 text-choco">チョコットマート</v-toolbar-title>
+          <v-toolbar-title class="body-2 text-choco">
+            <span>チョコットマート</span>
+          </v-toolbar-title>
           <v-spacer></v-spacer>
+          <v-toolbar-title class="body-2 text-choco">
+            <span class="pl-4">取引数: {{count.lists}}</span>
+          </v-toolbar-title>
         </v-toolbar>
         <div three-line subheader class="back-choco pb-0">
           <div class="pl-2 pt-4 pos-rel">
@@ -320,7 +325,8 @@ export default {
     ...mapGetters({
       isLoading: 'loading/isLoading',
       user: 'auth/user',
-      noticeBadge: 'firebase/noticeBadge'
+      noticeBadge: 'firebase/noticeBadge',
+      count: 'firebase/count'
     }),
   },
   watch: {},
@@ -333,7 +339,7 @@ export default {
   background-size: contain;
   background-image: url("../assets/imgs/mohu.png");
   width: 70px;
-  height: 70px;
+  height: 60px;
   bottom: -10px;
   right: 10px;
   display: flex;
