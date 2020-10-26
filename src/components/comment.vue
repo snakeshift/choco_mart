@@ -548,7 +548,7 @@ export default {
   }
 }
 .fukidasiWrapper {
-  width: calc(100% - 50px);
+  width: calc(100% - 48px);
 }
 .v-dialog__content ::v-deep .image-dialog{
   box-shadow: initial;
