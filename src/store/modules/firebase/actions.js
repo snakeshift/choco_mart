@@ -776,7 +776,7 @@ export default {
   },
 
   async registerComment({ dispatch, commit, getters, rootGetters }, payload){
-    const {itemId, kind, message} = {...payload}
+    const {itemId, kind, message, imageUrl} = {...payload}
     const now = Math.floor( new Date().getTime() / 1000 )
     const commentRef = COMMENT_REF().doc(itemId)
     const talkOrListRef = kind === COMMENT_TYPE.LIST
@@ -786,6 +786,7 @@ export default {
     const commentData = {
       uid: rootGetters['auth/user'].uid,
       msg: message,
+      imageUrl: imageUrl,
       created_at: now
     }
     const itemData = {

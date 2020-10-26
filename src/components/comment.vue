@@ -27,15 +27,22 @@
       </table>
       <ul class="chat-choco oneArea">
         <li v-for="(content,index) in reply" :key="index" class="onebox" :class="{'owner': content.uid === uid, 'myself': content.uid === user.uid,'member': content.uid != user.uid}">
-          <div class="fukiArea">
+          <div class="fukiArea pos-rel">
             <v-avatar size="30" v-if="content.uid === user.uid" class="pointer" @click="iconSelect.isShow = true">
               <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,true)">
             </v-avatar>
             <v-avatar size="30" v-else class="pointer" @click="showUserInfo(content.uid)">
               <img :src="require(`@/assets/imgs/avatars/${members[content.uid].icon}.gif`)" :style="getIconImageStyle(members[content.uid].icon,false)">
             </v-avatar>
-            <div>
+            <div class="fukidasiWrapper">
               <div class="fukidasi">
+                <v-img
+                  v-if="content.imageUrl"
+                  :lazy-src="content.imageUrl"
+                  :src="content.imageUrl"
+                  @click="showSelectedImage(content.imageUrl)"
+                  class="mb-2"
+                ></v-img>
                 <p v-html="$sanitize(content.msg)" class="text-normal"></p>
                 <p class="member_name">{{members[content.uid] ? members[content.uid]["name"] : ""}}</p>
               </div>
@@ -52,7 +59,7 @@
         >
           <div class="modal-choco">
             <div class="head text-choco pl-2 body-2">comment</div>
-            <div class="body text-choco-dark pa-2 mt-3 modal-textarea-choco">
+            <div class="body text-choco-dark pa-2 pb-0 mt-3 modal-textarea-choco">
               <v-textarea
                 outlined
                 label="返信.."
@@ -61,8 +68,23 @@
                 height="180px"
               ></v-textarea>
             </div>
+            <v-row class="ma-0">
+              <v-col class="pa-0 ml-2 text-choco-dark">
+                <v-file-input
+                  v-model="chat.file"
+                  class="ma-0 pa-0 input-image"
+                  accept="image/*"
+                  prepend-icon="mdi-camera"
+                  hide-details
+                  truncate-length="7"
+                  small-chips
+                  @change="handleFile"
+                ></v-file-input>
+              </v-col>
+              <v-col></v-col>
+            </v-row>
             <div class="footer">
-              <v-btn color="primary" class="button-choco" :loading="chat.loading" dark @click="sendChat()">
+              <v-btn color="primary" class="button-choco" :class="{'pointer-none': chat.uploading}" :loading="chat.loading" dark @click="sendChat()">
                 <span>書き込む</span>
               </v-btn>
               <v-btn color="primary" class="button-choco" dark @click="chat.isShow = false">
@@ -151,6 +173,17 @@
             </div>
           </div>
         </v-dialog>
+        <v-dialog
+          v-model="imageDialog.isShow"
+          width="90%"
+          max-width="700"
+          content-class="image-dialog"
+        >
+          <v-img
+            :lazy-src="imageDialog.src"
+            :src="imageDialog.src"
+          ></v-img>
+        </v-dialog>
         <v-overlay :value="iconSelect.isShow">
           <v-row class="icon-select-area">
             <v-col>
@@ -196,14 +229,16 @@
 </template>
 
 <script>
+import Compressor from 'compressorjs'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { TYPE, TYPE_TEXT, TALK_TYPE, TYPE_COLOR, TYPE_TEXT_SHORT, STATUS, STATUS_TEXT, COMMENT_TYPE } from '@/config/library'
-import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF } from '@/config/firebase/ref'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, LIST_REF, TALK_REF, COMMENT_REF, STORAGE_REF } from '@/config/firebase/ref'
 import { MAX_FAVORITE } from '@/config/setting'
 import firebase from 'firebase'
 import '@/assets/scss/components/chat.scss'
 
 export default {
+  name: 'commentDialog',
   data () {
     return {
       kind: COMMENT_TYPE.LIST,
@@ -218,7 +253,14 @@ export default {
       chat: {
         value: '',
         isShow: false,
-        loading: false
+        loading: false,
+        file: null,
+        image: null,
+        uploading: false
+      },
+      imageDialog: {
+        src: null,
+        isShow: false
       },
       userInfo: {
         isShow: false,
@@ -307,7 +349,10 @@ export default {
       this.chat = {
         value: this.chat.value,
         isShow: this.chat.isShow,
-        loading: false
+        loading: false,
+        image: null,
+        file: null,
+        uploading: false
       }
       if(this.kind === COMMENT_TYPE.LIST){
         this.name = this.comments.item.name
@@ -325,10 +370,14 @@ export default {
     async sendChat(){
       if(!this.chat.value) return
       this.chat.loading = true
-      await this.registerComment({itemId: this.itemId, kind: this.kind, message: this.chat.value})
+      const imageUrl = this.chat.image ? await this.uploadImage() : ''
+      await this.registerComment({itemId: this.itemId, kind: this.kind, message: this.chat.value, imageUrl})
       this.chat.value = ''
       this.chat.isShow = false
       this.chat.loading = false
+      this.chat.image = null
+      this.chat.file = null
+      this.chat.uploading = false
       this.tableScroll()
     },
     async translateOtherDeal(itemId) {
@@ -356,6 +405,42 @@ export default {
       await this.updateIcon({icon: iconNo})
       this.getTalkMemberList()
       this.iconSelect.isShow = false
+    },
+    // 画像圧縮
+    handleFile(file) {
+      if (!file) {
+        this.chat.image = null
+        return
+      }
+      this.chat.uploading = true
+      new Compressor(file, {
+        quality: 0.6,
+        success: function(result) {
+          const timeStamp = new Date().getTime()
+          const fileName = `${timeStamp}_${result.name}`
+          const compressedImage = new File([result], fileName)
+          this.chat.image = compressedImage
+          this.chat.uploading = false
+        }.bind(this),
+        maxWidth: 1000,
+        maxHeight: 400,
+        error(err) {}
+      })
+    },
+    async uploadImage() {
+      const path = `comments/images/${this.chat.image.name}`
+      const metaData = {
+        cacheControl: 'public,max-age=2592000', // 1ヶ月間有効
+        contentType: 'image/jpeg'
+      }
+      const storageRef = STORAGE_REF().ref(path)
+      // 画像をStorageにアップロード
+      await storageRef.put(this.chat.image, metaData)
+      return await firebase.storage().ref(path).getDownloadURL()
+    },
+    showSelectedImage(url) {
+      this.imageDialog.src = url
+      this.imageDialog.isShow = true
     }
   },
   computed: {
@@ -461,5 +546,11 @@ export default {
       }
     }
   }
+}
+.fukidasiWrapper {
+  width: calc(100% - 50px);
+}
+.v-dialog__content ::v-deep .image-dialog{
+  box-shadow: initial;
 }
 </style>
