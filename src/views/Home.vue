@@ -290,12 +290,13 @@ export default {
     ]),
     ...mapActions('auth', [
       'getUserAnonymously',
-      'updateUserName'
+      'updateUserName',
+      'checkPid',
+      'setBanListListener'
     ])
   },
   async mounted() {
     await this.getUserAnonymously()
-
     const userRef = USER_REF().doc(this.user.uid)
     await userRef.get().then(async function(doc) {
       if(doc.exists) {
@@ -307,8 +308,10 @@ export default {
           this.watchPushMessage()
           this.watchRefreshToken()
         }
-
+        const pid = doc.data().pid || ''
+        const newPid = pid || await this.checkPid()
         userRef.update({
+          pid: newPid,
           updated_at: CURRENT_TIME()
         })
         this.setUserInfo(doc.data())
@@ -318,6 +321,7 @@ export default {
         this.$router.push('/')
       }
     }.bind(this))
+    this.setBanListListener()
   },
   computed: {
     TYPE: () => TYPE,
@@ -325,11 +329,19 @@ export default {
     ...mapGetters({
       isLoading: 'loading/isLoading',
       user: 'auth/user',
+      userInfo: 'auth/userInfo',
       noticeBadge: 'firebase/noticeBadge',
-      count: 'firebase/count'
+      count: 'firebase/count',
+      banList: 'auth/banList'
     }),
   },
-  watch: {},
+  watch: {
+    banList(val) {
+      if (this.userInfo.pid && this.in_array(this.userInfo.pid, this.banList)) {
+        this.$router.push('limit')
+      }
+    }
+  },
 }
 </script>
 

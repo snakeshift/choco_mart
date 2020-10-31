@@ -71,6 +71,14 @@ $base_color_5: rgb(206, 208, 219);
         color: $base_color_4;
         text-align: right;
       }
+      .member_id{
+        font-size: 10px;
+        line-height: 10px;
+        margin-bottom: 0;
+        position: relative;
+        color: #334674;
+        text-align: right;
+      }
     }
   }
   .member{
@@ -89,6 +97,14 @@ $base_color_5: rgb(206, 208, 219);
         margin-bottom: 0;
         position: relative;
         color: $base_color_4;
+        text-align: right;
+      }
+      .member_id{
+        font-size: 10px;
+        line-height: 10px;
+        margin-bottom: 0;
+        position: relative;
+        color: #334674;
         text-align: right;
       }
     }
@@ -204,7 +220,7 @@ $base_color_5: rgb(206, 208, 219);
 .oneArea .onebox .fukidasi {
   padding: 15px;
   font-size: 14px;
-  padding-bottom: 0;
+  padding-bottom: 5px;
 }
 .oneArea .onebox .fukidasi::before {
   top: 7px;

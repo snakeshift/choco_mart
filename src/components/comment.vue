@@ -45,6 +45,7 @@
                 ></v-img>
                 <p v-html="$sanitize(content.msg)" class="text-normal"></p>
                 <p class="member_name">{{members[content.uid] ? members[content.uid]["name"] : ""}}</p>
+                <p class="member_id" v-if="members[content.uid].pid">ID: {{members[content.uid].pid}}</p>
               </div>
               <p class="msg_time">{{getFormatedDate(content.created_at)}}</p>
             </div>
@@ -147,13 +148,13 @@
               </table>
             </div>
             <div class="footer">
-              <template v-if="selfInfo.admin">
+              <template v-if="selfInfo.admin && userInfo.pid && !userInfo.admin">
                 <v-btn
-                  v-if="userInfo.isBan"
+                  v-if="in_array(userInfo.pid, banList)"
                   color="danger"
                   class="button-choco"
                   dark
-                  @click="releaseBan({userId: userInfo.userId}); userInfo.isShow = false"
+                  @click="releaseIpBan({pid: userInfo.pid}); userInfo.isShow = false"
                 >
                   <span>BAN解除</span>
                 </v-btn>
@@ -162,7 +163,7 @@
                   color="danger"
                   class="button-choco"
                   dark
-                  @click="registerBan({userId: userInfo.userId}); userInfo.isShow = false"
+                  @click="registerIpBan({pid: userInfo.pid}); userInfo.isShow = false"
                 >
                   <span>BAN</span>
                 </v-btn>
@@ -265,7 +266,9 @@ export default {
       userInfo: {
         isShow: false,
         userId: '',
-        isBan: false
+        pid: '',
+        isBan: false,
+        admin: false
       },
       iconSelect: {
         isShow: false
@@ -278,7 +281,7 @@ export default {
   },
   methods: {
     ...mapActions('firebase', ['registerGood', 'removeGood', 'getNoticeListRef', 'registerComment', 'getCommentList', 'getTalkMemberList', 'getUserTradeList']),
-    ...mapActions('auth', ['getUserById', 'registerBan', 'releaseBan', 'updateIcon']),
+    ...mapActions('auth', ['getUserById', 'registerIpBan', 'releaseIpBan', 'updateIcon']),
     ...mapMutations('firebase', ['resetTalkMemberList']),
     ...mapMutations('loading', [
       'setIsLoading',
@@ -396,6 +399,8 @@ export default {
       const userInfo = await this.getUserById({userId})
       this.userInfo.isBan = userInfo.isBan
       this.userInfo.userId = userId
+      this.userInfo.pid = userInfo.pid
+      this.userInfo.admin = userInfo.admin
 
       await this.getUserTradeList({userId})
       this.setIsLoading(false)
@@ -414,7 +419,7 @@ export default {
       }
       this.chat.uploading = true
       new Compressor(file, {
-        quality: 0.6,
+        quality: 0.7,
         success: function(result) {
           const timeStamp = new Date().getTime()
           const fileName = `${timeStamp}_${result.name}`
@@ -453,6 +458,7 @@ export default {
     MAX_FAVORITE: () => MAX_FAVORITE,
     ...mapGetters({
       user: 'auth/user',
+      banList: 'auth/banList',
       comments: 'firebase/commentList',
       members: 'firebase/talkMemberList',
       userItems: 'firebase/talkMemberTradeList',

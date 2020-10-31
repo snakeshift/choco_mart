@@ -10,6 +10,8 @@ const LIST_REF = () => firebase.firestore().collection('lists')
 const TALK_REF = () => firebase.firestore().collection('talks')
 const COUNT_REF = () => firebase.firestore().collection('counts')
 
+const BAN_REF = () => firebase.firestore().collection('bans').doc('ip')
+
 // Cloud Storage
 const STORAGE_REF = () => firebase.storage()
 
@@ -22,5 +24,6 @@ export {
   LIST_REF,
   TALK_REF,
   COUNT_REF,
-  STORAGE_REF
+  STORAGE_REF,
+  BAN_REF
 }

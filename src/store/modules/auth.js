@@ -1,12 +1,15 @@
 import firebase from 'firebase'
-import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF } from '@/config/firebase/ref'
+import axios from 'axios'
+import { USER_REF, SELL_REF, BUY_REF, NOTICE_REF, BAN_REF } from '@/config/firebase/ref'
+import { CURRENT_TIME, INCREMENT, DELETE, ARRAY_UNION, ARRAY_REMOVE } from '@/config/firebase/util'
 
 export default {
   namespaced: true,
   state: {
     user: {},
     userInfo: {},
-    status: false
+    status: false,
+    banList: []
   },
   getters: {
     user(state) {
@@ -17,6 +20,9 @@ export default {
     },
     isSignedIn(state) {
       return state.status
+    },
+    banList(state) {
+      return state.banList
     }
   },
   mutations: {
@@ -28,6 +34,9 @@ export default {
     },
     onUserStatusChanged(state, status) {
       state.status = status //ログインしてるかどうか true or false
+    },
+    setBanList(state, banList) {
+      state.banList = banList
     }
   },
   actions: {
@@ -80,6 +89,7 @@ export default {
         return true
       }
     },
+    // IP単位でのBANに方針を変えたので現在は未使用
     async registerBan ({ dispatch, commit, getters, rootGetters }, payload) {
       const userId = payload.userId
       const userRef = USER_REF().doc(userId)
@@ -87,12 +97,36 @@ export default {
         isBan: true
       })
     },
+    // IP単位でのBANに方針を変えたので現在は未使用
     async releaseBan ({ dispatch, commit, getters, rootGetters }, payload) {
       const userId = payload.userId
       const userRef = USER_REF().doc(userId)
       userRef.update({
         isBan: false
       })
+    },
+    // BAN監視登録
+    async setBanListListener ({ dispatch, commit, getters, rootGetters }, payload) {
+      BAN_REF().onSnapshot(function (doc) {
+        const ban = doc.data()
+        commit('setBanList', ban.list)
+      })
+    },
+    async registerIpBan ({ dispatch, commit, getters, rootGetters }, payload) {
+      const pid = payload.pid
+      if (pid) {
+        await BAN_REF().update({
+          list: ARRAY_UNION(pid)
+        })
+      }
+    },
+    async releaseIpBan ({ dispatch, commit, getters, rootGetters }, payload) {
+      const pid = payload.pid
+      if (pid) {
+        await BAN_REF().update({
+          list: ARRAY_REMOVE(pid)
+        })
+      }
     },
     async RefreshUser ({ dispatch, commit, getters, rootGetters }, payload) {
       dispatch('getUserAnonymously')
@@ -105,6 +139,35 @@ export default {
       userRef.get().then(function(doc) {
         commit('setUserInfo', doc.data())
       })
+    },
+    async checkPid ({ dispatch, commit, getters, rootGetters }, payload) {
+      let pid
+      const token = '3773667639e283'
+      const ip = await axios.post(`https://ipinfo.io?token=${token}`).then(e => {
+        return e.data.ip || ''
+      }).catch((error) => {
+        return ''
+      })
+
+      const mask = (val, key) => {
+        let result = ''
+        val = encodeURIComponent(val)
+        const ipArray = val.split('.')
+        for (let i = 0; i < ipArray.length; i++) {
+          if (i%2 !== 0) {
+            result += ipArray[i]
+          } else {
+            for (let j = 0; j < ipArray[i].length; j++) {
+              result += String.fromCharCode(val.charCodeAt(j) + key)
+            }
+          }
+        }
+        result = result.slice(1)
+        return result
+      }
+
+      pid = ip ? mask(ip, 20) : ''
+      return pid
     }
   }
 }

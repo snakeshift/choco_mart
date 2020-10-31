@@ -37,14 +37,18 @@ export default {
     const buyRef = BUY_REF().doc(this.user.uid)
     const noticeRef = NOTICE_REF().doc(this.user.uid)
 
-    await userRef.get().then(function(doc) {
+    await userRef.get().then(async function(doc) {
       if (doc.exists) {
         this.setStatusMsg('ユーザー情報更新中..')
+        const pid = doc.data().pid || ''
+        const newPid = pid || await this.checkPid()
         userRef.update({
+          pid: newPid,
           updated_at: CURRENT_TIME()
         })
       } else {
         this.setStatusMsg('初回ユーザー情報作成中..')
+        const newPid = await this.checkPid()
         // 初期設定(ユーザー)
         userRef.set({
           updated_at: CURRENT_TIME(),
@@ -52,7 +56,8 @@ export default {
           name: '名も無き冒険者',
           icon: Math.floor( Math.random() * (MAX_ICON_NUM + 1 - 1) ) + 1,
           admin: false,
-          isBan: false
+          isBan: false,
+          pid: newPid
         })
         // 初期設定(売る)
         sellRef.set({
@@ -80,7 +85,8 @@ export default {
       'setStatusMsg'
     ]),
     ...mapActions('auth', [
-      'getUserAnonymously'
+      'getUserAnonymously',
+      'checkPid'
     ])
   },
   computed: {
