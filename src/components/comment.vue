@@ -365,8 +365,13 @@ export default {
         this.price = null
       }
 
+      // 初回オープン時
+      if (this.$refs.comment_table.scrollHeight === 0) {
+        if (this.reply.length > 100) {
+          this.tableScroll()
+        }
       // スクロール位置が下の方であれば
-      if(this.$refs.comment_table.scrollHeight - this.$refs.comment_table.scrollTop < 1300){
+      } else if(this.$refs.comment_table.scrollHeight - this.$refs.comment_table.scrollTop < 1300){
         this.tableScroll()
       }
     },

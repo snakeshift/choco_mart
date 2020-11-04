@@ -193,7 +193,7 @@ export default {
       await this.$refs.comment.refresh(itemId,kind)
       await this.$refs.comment.refreshNotice()
 
-      this.$refs.comment.tableScroll()
+      // this.$refs.comment.tableScroll()
       this.isShow.comment = !this.isShow.comment
       this.setIsLoading(false)
     },
