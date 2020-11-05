@@ -14,7 +14,8 @@ const TALK_TYPE = {
   CHAT: 1,
   QUESTION: 2,
   PET: 3,
-  OTHER: 4
+  OTHER: 4,
+  RECRUIT: 5
 }
 const COMMENT_TYPE = {
   LIST: 'lists',
@@ -52,19 +53,25 @@ const TALK_TYPE_SELECT = [
   {
     VALUE: TALK_TYPE.OTHER,
     TEXT: 'その他'
-  }
+  },
+  {
+    VALUE: TALK_TYPE.RECRUIT,
+    TEXT: '募集'
+  },
 ]
 const TALK_TYPE_TEXT_SHORT = {
   [TALK_TYPE.CHAT]: '雑',
   [TALK_TYPE.QUESTION]: '質',
   [TALK_TYPE.PET]: '獣',
-  [TALK_TYPE.OTHER]: '他'
+  [TALK_TYPE.OTHER]: '他',
+  [TALK_TYPE.RECRUIT]: '募'
 }
 const TALK_TYPE_COLOR = {
   [TALK_TYPE.CHAT]: 'indigo',
   [TALK_TYPE.QUESTION]: '#206574',
   [TALK_TYPE.PET]: '#669F6A',
-  [TALK_TYPE.OTHER]: 'blue-grey'
+  [TALK_TYPE.OTHER]: 'blue-grey',
+  [TALK_TYPE.RECRUIT]: '#D81B60'
 }
 const STATUS_TEXT = {
   [TYPE.BUY]: {
