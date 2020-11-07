@@ -151,6 +151,7 @@ export default {
     Promise.all(promises).then(items => {
       // リスナー登録
       dispatch('setBuyListListener', {id: item.id, index})
+      dispatch('registerGood', {itemId: item.id, kind: COMMENT_TYPE.LIST})
       commit('setBuyList', { index, item })
     }).catch(() => {
       commit('modal/setIsShowError', true, { root: true })
@@ -392,6 +393,7 @@ export default {
     Promise.all(promises).then(items => {
       // リスナー登録
       dispatch('setSellListListener', {id: item.id, index})
+      dispatch('registerGood', {itemId: item.id, kind: COMMENT_TYPE.LIST})
       commit('setSellList', { index, item })
     }).catch(() => {
       commit('modal/setIsShowError', true, { root: true })

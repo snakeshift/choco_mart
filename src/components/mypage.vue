@@ -109,7 +109,15 @@ export default {
     //     })
     //   }
     // },
-    ...mapActions('firebase', ['getNoticeList', 'setNoticeListener', 'watchNoticeList'])
+    async checkFinishItem() {
+      for (const id in this.items) {
+        const kind = 'price' in this.items[id] ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
+        if (kind === COMMENT_TYPE.LIST && this.items[id].status === STATUS.FINISH) {
+          await this.removeGood({kind, itemId: id})
+        }
+      }
+    },
+    ...mapActions('firebase', ['getNoticeList', 'setNoticeListener', 'watchNoticeList', 'removeGood'])
   },
   computed: {
     TALK_TYPE: () => TALK_TYPE,
@@ -146,6 +154,8 @@ export default {
   async mounted(){
     await this.getNoticeList()
     this.watchNoticeList()
+    await new Promise(r => setTimeout(r, 1000))
+    await this.checkFinishItem()
     // this.refresh()
     // this.init()
   }

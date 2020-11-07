@@ -378,8 +378,13 @@ export default {
     async sendChat(){
       if(!this.chat.value) return
       this.chat.loading = true
+
+      // 取引系で初回書き込みの場合は強制お気に入り登録
+      const isSetGood = !this.isGood && this.kind === COMMENT_TYPE.LIST && this.user.uid in this.members == false
+
       const imageUrl = this.chat.image ? await this.uploadImage() : ''
       await this.registerComment({itemId: this.itemId, kind: this.kind, message: this.chat.value, imageUrl})
+      if (isSetGood) this.plusGood()
       this.chat.value = ''
       this.chat.isShow = false
       this.chat.loading = false
