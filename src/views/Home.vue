@@ -186,6 +186,7 @@ export default {
       this.$refs.howToUse.isShow = true
     },
     async showReply(itemId, kind) {
+      this.$router.replace({name: 'home', query: { kind, id: itemId }}).catch(() => {})
       this.setIsLoading(true)
       this.setStatusMsg('読み込み中..')
       this.$refs.comment.setKind(kind)
@@ -197,7 +198,14 @@ export default {
       this.isShow.comment = !this.isShow.comment
       this.setIsLoading(false)
     },
+    checkQuery() {
+      const {id, kind } = this.$route.query
+      if (id && kind) {
+        this.showReply(id, kind)
+      }
+    },
     closeReply(){
+      this.$router.replace({name: 'home'}).catch(() => {})
       this.isShow.comment = !this.isShow.comment
     },
     showNameDialog() {
@@ -218,6 +226,7 @@ export default {
       this.dialog.isShow = true
     },
     setTab(index) {
+      this.$router.replace({name: 'home'}).catch(() => {})
       if (index == TYPE.MY_PAGE) {
         this.resetBadge({type: 'notices'})
       } else if (index == TYPE.LIST && this.selected === index) {
@@ -244,8 +253,8 @@ export default {
           this.setModalStatusMsg(`お気に入りタブに登録することで<br>プッシュ通知を受け取れます。`)
         })
         .catch(err => {
-          this.setIsShowError(true)
-          this.setModalStatusMsg(`書き込み通知を受け取りたい場合は<br>通知を許可してください。`)
+          // this.setIsShowError(true)
+          // this.setModalStatusMsg(`書き込み通知を受け取りたい場合は<br>通知を許可してください。`)
         })
     },
     // メッセージを受け取り時
@@ -322,6 +331,7 @@ export default {
       }
     }.bind(this))
     this.setBanListListener()
+    this.checkQuery()
   },
   computed: {
     TYPE: () => TYPE,
