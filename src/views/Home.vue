@@ -2,12 +2,13 @@
   <div>
     <v-row justify="center" class="choco-mart">
       <v-card class="border-choco back-choco">
+        <h1 class="h1-for-seo">チョコットランド取引掲示板</h1>
         <v-toolbar dark color="#1E2E58" height="30" class="border-initial">
-          <v-toolbar-title class="body-2 text-choco">
-            <span>チョコットマート</span>
+          <v-toolbar-title class="body-2 text-choco pointer" @click="reload()">
+            <span>チョコットマート | 更新</span>
           </v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-toolbar-title class="body-2 text-choco">
+          <v-toolbar-title class="body-2 text-choco pointer">
             <span class="pl-4">取引数: {{count.lists}}</span>
           </v-toolbar-title>
         </v-toolbar>
@@ -184,6 +185,10 @@ export default {
     },
     openHowToUse() {
       this.$refs.howToUse.isShow = true
+    },
+    reload() {
+      this.$router.replace({name: 'home', query: {}}).catch(() => {})
+      this.$router.go({path: this.$router.currentRoute.path, params: {}, force: true})
     },
     async showReply(itemId, kind) {
       this.$router.replace({name: 'home', query: { kind, id: itemId }}).catch(() => {})
@@ -411,5 +416,12 @@ export default {
   position: absolute;
   top: 0;
   right: 0;
+}
+.h1-for-seo {
+  position: absolute;
+  bottom: 2px;
+  font-size: 10px;
+  right: 8px;
+  color: #FFEAC3;
 }
 </style>

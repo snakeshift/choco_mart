@@ -74,10 +74,10 @@ export default {
       }
     }.bind(this))
     this.setStatusMsg('ユーザー更新完了..')
-    setTimeout(function(){
-      this.$router.push('home')
-      this.setIsLoading(false)
-    }.bind(this), 1500)
+    // setTimeout(function(){
+    this.$router.push('home')
+    this.setIsLoading(false)
+    // }.bind(this), 500)
   },
   methods: {
     ...mapMutations('loading', [
