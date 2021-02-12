@@ -367,7 +367,7 @@ export default {
 
       // 初回オープン時
       if (this.$refs.comment_table.scrollHeight === 0) {
-        if (this.reply.length > 100) {
+        if (this.reply.length > 50) {
           this.tableScroll()
         }
       // スクロール位置が下の方であれば

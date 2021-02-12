@@ -843,6 +843,7 @@ export default {
     // 非同期まとめて処理
     await Promise.all(promises).then(items => {
       for(const data of items){
+        if (!data.value.data()) continue
         const id = data.value.data().id
         const kind = 'price' in data.value.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
         dispatch('setNoticeListener', { id, kind, isInit: true })
@@ -882,9 +883,11 @@ export default {
         // idがまだリスナーに含まれていなければ追加
         if (!(item.id in notices)) {
           const data = await item.get()
-          const id = data.data().id
-          const kind = 'price' in data.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
-          dispatch('setNoticeListener', {id, kind, isInit: true})
+          if (data.data()) {
+            const id = data.data().id
+            const kind = 'price' in data.data() ? COMMENT_TYPE.LIST : COMMENT_TYPE.TALK
+            dispatch('setNoticeListener', {id, kind, isInit: true})
+          }
         }
       })
       // 減っているか判別
