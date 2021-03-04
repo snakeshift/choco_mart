@@ -80,6 +80,7 @@
                   truncate-length="7"
                   small-chips
                   @change="handleFile"
+                  @click.stop
                 ></v-file-input>
               </v-col>
               <v-col></v-col>
@@ -429,7 +430,7 @@ export default {
       }
       this.chat.uploading = true
       new Compressor(file, {
-        quality: 0.7,
+        quality: 1.0,
         success: function(result) {
           const timeStamp = new Date().getTime()
           const fileName = `${timeStamp}_${result.name}`
